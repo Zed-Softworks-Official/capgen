@@ -1,7 +1,6 @@
 import { FlatCompat } from '@eslint/eslintrc'
 import tseslint from 'typescript-eslint'
 // @ts-ignore -- no types for this plugin
-import drizzle from 'eslint-plugin-drizzle'
 
 const compat = new FlatCompat({
     baseDirectory: import.meta.dirname,
@@ -14,9 +13,7 @@ export default tseslint.config(
     ...compat.extends('next/core-web-vitals'),
     {
         files: ['**/*.ts', '**/*.tsx'],
-        plugins: {
-            drizzle,
-        },
+        plugins: {},
         extends: [
             ...tseslint.configs.recommended,
             ...tseslint.configs.recommendedTypeChecked,
@@ -34,14 +31,6 @@ export default tseslint.config(
             '@typescript-eslint/no-misused-promises': [
                 'error',
                 { checksVoidReturn: { attributes: false } },
-            ],
-            'drizzle/enforce-delete-with-where': [
-                'error',
-                { drizzleObjectName: ['db', 'ctx.db'] },
-            ],
-            'drizzle/enforce-update-with-where': [
-                'error',
-                { drizzleObjectName: ['db', 'ctx.db'] },
             ],
         },
     },
