@@ -1,12 +1,23 @@
 import '~/styles/globals.css'
 
+import Link from 'next/link'
 import { type Metadata } from 'next'
 import { Geist } from 'next/font/google'
 
-import { TRPCReactProvider } from '~/trpc/react'
-import { ClerkProvider } from '@clerk/nextjs'
-import { env } from '~/env'
+import {
+    ClerkProvider,
+    SignedIn,
+    SignedOut,
+    SignInButton,
+    UserButton,
+} from '@clerk/nextjs'
+
 import { ThemeProvider } from './_components/theme-provider'
+
+import { TRPCReactProvider } from '~/trpc/react'
+
+import { env } from '~/env'
+import { Button } from './_components/ui/button'
 
 export const metadata: Metadata = {
     title: 'CapGen',
@@ -32,10 +43,33 @@ export default function RootLayout({
                         enableSystem
                         disableTransitionOnChange
                     >
-                        <TRPCReactProvider>{children}</TRPCReactProvider>
+                        <TRPCReactProvider>
+                            <Navbar />
+                            {children}
+                        </TRPCReactProvider>
                     </ThemeProvider>
                 </body>
             </html>
         </ClerkProvider>
+    )
+}
+
+function Navbar() {
+    return (
+        <header className="bg-background sticky top-0 z-50 h-16 border-b">
+            <div className="container mx-auto flex h-full items-center justify-between">
+                <Link href="/" className="font-bold">
+                    CapGen
+                </Link>
+                <SignedIn>
+                    <UserButton />
+                </SignedIn>
+                <SignedOut>
+                    <Button variant={'ghost'} asChild>
+                        <SignInButton />
+                    </Button>
+                </SignedOut>
+            </div>
+        </header>
     )
 }

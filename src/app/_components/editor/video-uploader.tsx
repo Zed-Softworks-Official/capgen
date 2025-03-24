@@ -4,12 +4,7 @@ import { useDropzone } from 'react-dropzone'
 import { Upload } from 'lucide-react'
 
 import { editorStore } from '~/lib/store'
-
-function updateVideo(video: File) {
-    editorStore.setState((state) => ({
-        video,
-    }))
-}
+import { extractAudioFromVideo } from '~/lib/extract'
 
 export function VideoDropzone() {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -24,6 +19,7 @@ export function VideoDropzone() {
             }
 
             updateVideo(file)
+            extractAudio(file)
         },
         accept: {
             'video/*': ['.mp4', '.mov', '.avi', '.mkv', '.webm'],
@@ -52,4 +48,27 @@ function DropText(props: { isDragActive: boolean }) {
             <p>Drag and drop a video here, or click to select a video</p>
         </div>
     )
+}
+
+function updateVideo(video: File) {
+    editorStore.setState((state) => ({
+        ...state,
+        video,
+    }))
+}
+
+async function extractAudio(video: File) {
+    const { audioData, error } = await extractAudioFromVideo({
+        video,
+        logAction: (message) => console.log(message),
+    })
+
+    if (error) {
+        console.error(error)
+    }
+
+    editorStore.setState((state) => ({
+        ...state,
+        audio: audioData,
+    }))
 }

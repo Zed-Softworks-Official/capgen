@@ -5,8 +5,8 @@ import ReactPlayer from 'react-player'
 
 import { editorStore } from '~/lib/store'
 
-export function Properties() {
-    const { video } = useStore(editorStore)
+export function VideoPlayer() {
+    const { video, audio } = useStore(editorStore)
 
     if (!video) {
         return null
@@ -15,6 +15,7 @@ export function Properties() {
     return (
         <div className="flex h-full w-full flex-col items-center justify-center">
             <ReactPlayer url={URL.createObjectURL(video)} controls />
+            <audio src={URL.createObjectURL(new Blob([audio!]))} controls />
         </div>
     )
 }

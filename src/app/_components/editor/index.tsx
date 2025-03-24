@@ -2,9 +2,10 @@
 
 import { useStore } from '@tanstack/react-store'
 
-import { VideoDropzone } from './video-dropzone'
+import { VideoDropzone } from './video-uploader'
+import { VideoPlayer } from './video-player'
+
 import { editorStore } from '~/lib/store'
-import { Properties } from './properties'
 
 export function Editor() {
     const { video } = useStore(editorStore)
@@ -13,5 +14,5 @@ export function Editor() {
         return <VideoDropzone />
     }
 
-    return <Properties />
+    return <VideoPlayer />
 }
