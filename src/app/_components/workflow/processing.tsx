@@ -1,18 +1,19 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { useStore } from '@tanstack/react-store'
-import { useEffect } from 'react'
 import { toast } from 'sonner'
 
-import { Progress } from '~/app/_components/ui/progress'
-import { extractAudioFromVideo, uploadAudioFile } from '~/lib/extract'
+import { updateProgress, workflowStore } from '~/lib/store'
+import { uploadAudioFile } from '~/lib/uploadthing'
+import { Progress } from '../ui/progress'
 
-import { editorStore, updateProgress } from '~/lib/store'
+import { extractAudioFromVideo } from '~/lib/extract'
 import { tryCatch } from '~/lib/try-catch'
 import { api } from '~/trpc/react'
 
 export function Processing() {
-    const { progress, video } = useStore(editorStore)
+    const { progress, currentFile } = useStore(workflowStore)
 
     const getTranscript = api.transcript.getTranscript.useMutation({
         onSuccess: () => {
@@ -23,9 +24,9 @@ export function Processing() {
         },
     })
 
-    const processFile = async (videoFile: File) => {
+    useProcessFile(currentFile?.data, async (file: File) => {
         const extractionResult = await extractAudioFromVideo({
-            video: videoFile,
+            video: file,
             logAction: (message) => {
                 console.log(message)
             },
@@ -50,24 +51,26 @@ export function Processing() {
         getTranscript.mutate({
             audioURL: uploadedData.value.url,
         })
-    }
-
-    useEffect(() => {
-        if (!video || progress.value !== 0) return
-
-        // Track that we've started processing to prevent duplicate processing
-        updateProgress({
-            value: 1,
-            message: 'Starting processing...',
-        })
-
-        void processFile(video)
-    }, [video])
+    })
 
     return (
-        <div>
+        <div className="flex w-full max-w-xl flex-col items-center justify-center gap-4">
             <Progress value={progress.value} />
             <span>{progress.message}</span>
         </div>
     )
+}
+
+function useProcessFile(
+    currentFile: File | undefined,
+    cb: (file: File) => Promise<void>
+) {
+    const processedRef = useRef<boolean>(false)
+
+    useEffect(() => {
+        if (!currentFile || processedRef.current) return
+
+        processedRef.current = true
+        void cb(currentFile)
+    }, [currentFile, cb])
 }

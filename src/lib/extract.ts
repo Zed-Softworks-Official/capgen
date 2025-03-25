@@ -3,8 +3,6 @@ import { fetchFile } from '@ffmpeg/util'
 import { err, ok } from 'neverthrow'
 
 import { tryCatch } from './try-catch'
-import { editorStore, updateProgress } from './store'
-import { uploadFiles } from './uploadthing'
 
 type ExtractionOpts = {
     video: File
@@ -59,34 +57,4 @@ export async function extractAudioFromVideo({ video, logAction }: ExtractionOpts
     }
 
     return ok({ audioData })
-}
-
-export async function uploadAudioFile(audioData: FileData) {
-    updateProgress({
-        value: 25,
-        message: 'Uploading audio file',
-    })
-
-    const audioBlob = new Blob([audioData])
-    const audioFile = new File([audioBlob], 'input.mp3')
-
-    const { data: res, error: uploadError } = await tryCatch(
-        uploadFiles('audioUploader', {
-            files: [audioFile],
-        })
-    )
-    if (uploadError) {
-        return err(new Error('Error uploading file'))
-    }
-
-    const uploadedData = res?.at(0)
-    if (!uploadedData) {
-        return err(new Error('Error uploading file'))
-    }
-
-    return ok({
-        url: uploadedData.ufsUrl,
-        filename: uploadedData.name,
-        size: uploadedData.size,
-    })
 }

@@ -4,8 +4,7 @@ import { useDropzone } from 'react-dropzone'
 import { Upload } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { editorStore } from '~/lib/store'
-import { extractAudioFromVideo } from '~/lib/extract'
+import { workflowStore } from '~/lib/store'
 
 export function Dropzone() {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -20,13 +19,18 @@ export function Dropzone() {
                 return
             }
 
-            updateVideo(file)
+            if (file.type.startsWith('video/')) {
+                updateCurrentFile({ file, type: 'video' })
+            } else {
+                updateCurrentFile({ file, type: 'audio' })
+            }
         },
         onDropRejected(fileRejections, event) {
             toast.error('Please upload a valid video')
         },
         accept: {
             'video/*': ['.mp4', '.mov', '.avi', '.mkv', '.webm'],
+            'audio/*': ['.mp3', '.wav', '.m4a', '.ogg', '.flac'],
         },
     })
 
@@ -54,9 +58,12 @@ function DropText(props: { isDragActive: boolean }) {
     )
 }
 
-function updateVideo(video: File) {
-    editorStore.setState((state) => ({
+function updateCurrentFile(opts: { file: File; type: 'video' | 'audio' }) {
+    workflowStore.setState((state) => ({
         ...state,
-        video,
+        currentFile: {
+            data: opts.file,
+            type: opts.type,
+        },
     }))
 }

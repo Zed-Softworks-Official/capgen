@@ -1,9 +1,18 @@
-import type { FileData } from '@ffmpeg/ffmpeg'
 import { Store } from '@tanstack/react-store'
 
-export const editorStore = new Store({
-    video: null as File | null,
+type WorkflowState = {
+    currentFile: {
+        data: File
+        type: 'video' | 'audio'
+    } | null
+    progress: {
+        value: number
+        message: string
+    }
+}
 
+export const workflowStore = new Store<WorkflowState>({
+    currentFile: null,
     progress: {
         value: 0,
         message: 'Splitting Audio',
@@ -11,12 +20,8 @@ export const editorStore = new Store({
 })
 
 export function updateProgress(opts: { value: number; message: string }) {
-    editorStore.setState((state) => ({
+    workflowStore.setState((state) => ({
         ...state,
         progress: opts,
     }))
 }
-
-export const notificationStore = new Store({
-    toastId: null as string | number | null,
-})

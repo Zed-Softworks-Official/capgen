@@ -11,6 +11,8 @@ export const env = createEnv({
 
         CLERK_SECRET_KEY: z.string(),
         UPLOADTHING_TOKEN: z.string(),
+
+        ASSEMBLYAI_API_KEY: z.string(),
     },
 
     /**
@@ -33,6 +35,8 @@ export const env = createEnv({
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
 
         UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
+
+        ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
