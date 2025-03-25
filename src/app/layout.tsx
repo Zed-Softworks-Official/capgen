@@ -18,6 +18,7 @@ import { TRPCReactProvider } from '~/trpc/react'
 
 import { env } from '~/env'
 import { Button } from './_components/ui/button'
+import { Toaster } from './_components/ui/sonner'
 
 export const metadata: Metadata = {
     title: 'CapGen',
@@ -46,6 +47,7 @@ export default function RootLayout({
                         <TRPCReactProvider>
                             <Navbar />
                             {children}
+                            <Toaster richColors />
                         </TRPCReactProvider>
                     </ThemeProvider>
                 </body>

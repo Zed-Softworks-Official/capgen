@@ -2,16 +2,21 @@
 
 import { useStore } from '@tanstack/react-store'
 
-import { VideoDropzone } from './video-uploader'
-import { VideoPlayer } from './video-player'
+import { Dropzone } from './dropzone'
 
 import { editorStore } from '~/lib/store'
+import { Processing } from './processing'
+import { VideoPlayer } from './video-player'
 
 export function Editor() {
-    const { video } = useStore(editorStore)
+    const { video, progress } = useStore(editorStore)
 
     if (!video) {
-        return <VideoDropzone />
+        return <Dropzone />
+    }
+
+    if (progress.value !== 100) {
+        return <Processing />
     }
 
     return <VideoPlayer />
