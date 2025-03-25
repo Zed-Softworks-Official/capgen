@@ -1,4 +1,5 @@
 import { Store } from '@tanstack/react-store'
+import type { Transcript } from 'assemblyai'
 
 type WorkflowState = {
     currentFile: {
@@ -9,6 +10,11 @@ type WorkflowState = {
         value: number
         message: string
     }
+    transcript: {
+        data: Transcript
+        srt: string
+    } | null
+    editing: boolean
 }
 
 export const workflowStore = new Store<WorkflowState>({
@@ -17,6 +23,8 @@ export const workflowStore = new Store<WorkflowState>({
         value: 0,
         message: 'Splitting Audio',
     },
+    transcript: null,
+    editing: false,
 })
 
 export function updateProgress(opts: { value: number; message: string }) {

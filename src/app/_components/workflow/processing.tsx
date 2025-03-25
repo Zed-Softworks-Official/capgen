@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 
 import { updateProgress, workflowStore } from '~/lib/store'
 import { uploadAudioFile } from '~/lib/uploadthing'
-import { Progress } from '../ui/progress'
+import { Progress } from '~/app/_components/ui/progress'
 
 import { extractAudioFromVideo } from '~/lib/extract'
 import { tryCatch } from '~/lib/try-catch'
@@ -15,9 +15,25 @@ import { api } from '~/trpc/react'
 export function Processing() {
     const { progress, currentFile } = useStore(workflowStore)
 
-    const getTranscript = api.transcript.getTranscript.useMutation({
-        onSuccess: () => {
-            console.log('Successfully uploaded')
+    const transcribeAudio = api.transcript.transcribeAudio.useMutation({
+        onSuccess: (res) => {
+            if (res.error) {
+                toast.error(res.error.message)
+                return
+            }
+
+            updateProgress({
+                value: 100,
+                message: 'Transcription complete',
+            })
+
+            workflowStore.setState((state) => ({
+                ...state,
+                transcript: {
+                    data: res.data.transcript,
+                    srt: res.data.srt,
+                },
+            }))
         },
         onError: (e) => {
             toast.error(e.message)
@@ -36,19 +52,23 @@ export function Processing() {
             return
         }
 
+        updateProgress({
+            value: 33,
+            message: 'Uploading audio file',
+        })
         const { data: uploadedData, error: uploadError } = await tryCatch(
             uploadAudioFile(extractionResult.value.audioData)
         )
         if (!uploadedData?.isOk() || uploadError) {
-            toast.message('Failed to upload audio file')
+            toast.error('Failed to upload audio file')
             return
         }
 
         updateProgress({
-            value: 50,
+            value: 66,
             message: 'Analyzing audio',
         })
-        getTranscript.mutate({
+        transcribeAudio.mutate({
             audioURL: uploadedData.value.url,
         })
     })

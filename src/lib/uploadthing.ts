@@ -3,17 +3,11 @@ import { err, ok } from 'neverthrow'
 import { generateReactHelpers, generateUploadDropzone } from '@uploadthing/react'
 
 import type { CapGenFileRouter } from '~/app/api/uploadthing/core'
-import { updateProgress } from './store'
 import { tryCatch } from './try-catch'
 
 const { uploadFiles } = generateReactHelpers<CapGenFileRouter>()
 
 export async function uploadAudioFile(audioData: FileData | File) {
-    updateProgress({
-        value: 25,
-        message: 'Uploading audio file',
-    })
-
     let audioFile: File
     if (audioData instanceof File) {
         audioFile = audioData

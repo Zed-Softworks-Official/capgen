@@ -6,9 +6,10 @@ import { workflowStore } from '~/lib/store'
 
 import { Dropzone } from './dropzone'
 import { Processing } from './processing'
+import { Download } from './download'
 
 export function Workflow() {
-    const { currentFile, progress } = useStore(workflowStore)
+    const { currentFile, progress, transcript } = useStore(workflowStore)
 
     if (!currentFile) {
         return <Dropzone />
@@ -18,5 +19,5 @@ export function Workflow() {
         return <Processing />
     }
 
-    return <>Hello, World!</>
+    return <Download />
 }
