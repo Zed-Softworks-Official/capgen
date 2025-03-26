@@ -7,17 +7,23 @@ import { workflowStore } from '~/lib/store'
 import { Dropzone } from './dropzone'
 import { Processing } from './processing'
 import { Download } from './download'
+import { CaptionEditor } from './caption-editor'
 
 export function Workflow() {
-    const { currentFile, progress, transcript } = useStore(workflowStore)
+    return <CaptionEditor />
+    // const { currentFile, progress, editing } = useStore(workflowStore)
 
-    if (!currentFile) {
-        return <Dropzone />
-    }
+    // if (!currentFile) {
+    //     return <Dropzone />
+    // }
 
-    if (progress.value !== 100) {
-        return <Processing />
-    }
+    // if (progress.value !== 100) {
+    //     return <Processing />
+    // }
 
-    return <Download />
+    // if (editing) {
+    //     return <CaptionEditor />
+    // }
+
+    // return <Download />
 }

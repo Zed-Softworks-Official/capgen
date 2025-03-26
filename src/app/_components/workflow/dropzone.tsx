@@ -47,13 +47,18 @@ export function Dropzone() {
 
 function DropText(props: { isDragActive: boolean }) {
     if (props.isDragActive) {
-        return <p>Drop the video here</p>
+        return (
+            <div className="flex flex-col items-center gap-4">
+                <Upload className="size-6" />
+                <p>Drop the file here</p>
+            </div>
+        )
     }
 
     return (
         <div className="flex flex-col items-center gap-4">
             <Upload className="size-6" />
-            <p>Drag and drop a video here, or click to select a video</p>
+            <p>Drag and drop a video or audio file here, or click to select a file</p>
         </div>
     )
 }

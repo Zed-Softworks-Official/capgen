@@ -33,6 +33,7 @@ export function Processing() {
                     data: res.data.transcript,
                     srt: res.data.srt,
                 },
+                editing: true,
             }))
         },
         onError: (e) => {
@@ -41,24 +42,30 @@ export function Processing() {
     })
 
     useProcessFile(currentFile?.data, async (file: File) => {
-        const extractionResult = await extractAudioFromVideo({
-            video: file,
-            logAction: (message) => {
-                console.log(message)
-            },
-        })
-        if (!extractionResult.isOk()) {
-            toast.error(extractionResult.error.message)
-            return
+        let extractionResult = null
+        if (file.type.includes('video')) {
+            extractionResult = await extractAudioFromVideo({
+                video: file,
+                logAction: (message) => {
+                    console.log(message)
+                },
+            })
+
+            if (!extractionResult.isOk()) {
+                toast.error(extractionResult.error.message)
+                return
+            }
         }
 
         updateProgress({
             value: 33,
             message: 'Uploading audio file',
         })
+
         const { data: uploadedData, error: uploadError } = await tryCatch(
-            uploadAudioFile(extractionResult.value.audioData)
+            uploadAudioFile(extractionResult?.value.audioData ?? file)
         )
+
         if (!uploadedData?.isOk() || uploadError) {
             toast.error('Failed to upload audio file')
             return
@@ -68,6 +75,7 @@ export function Processing() {
             value: 66,
             message: 'Analyzing audio',
         })
+
         transcribeAudio.mutate({
             audioURL: uploadedData.value.url,
         })
