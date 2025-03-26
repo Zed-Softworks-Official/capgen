@@ -7,10 +7,10 @@ import { workflowStore } from '~/lib/store'
 import { Dropzone } from './dropzone'
 import { Processing } from './processing'
 import { Download } from './download'
-import { CaptionEditor } from './caption-editor'
+import { CaptionSettings } from './caption-settings'
 
 export function Workflow() {
-    return <CaptionEditor />
+    return <CaptionSettings />
     // const { currentFile, progress, editing } = useStore(workflowStore)
 
     // if (!currentFile) {

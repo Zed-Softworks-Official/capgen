@@ -5,6 +5,7 @@ export type Speaker = {
     name: string
     textColor: string
     borderColor: string | null
+    includeInCaption: boolean
 }
 
 export type Caption = {
