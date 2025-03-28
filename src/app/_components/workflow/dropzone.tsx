@@ -12,6 +12,7 @@ import { Button } from '../ui/button'
 import { Label } from '../ui/label'
 import { Switch } from '../ui/switch'
 import { useState } from 'react'
+import { api } from '~/trpc/react'
 
 export function Dropzone() {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -67,6 +68,16 @@ function DropText() {
     const { currentFile } = useStore(workflowStore)
     const [separateSpeakers, setSeparateSpeakers] = useState(true)
 
+    const checkUserSubscription = api.user.checkUserSubscription.useMutation({
+        onSuccess: () => {
+            stateStore.setState((state) => ({
+                ...state,
+                uploading: false,
+                processing: true,
+            }))
+        },
+    })
+
     if (currentFile) {
         return (
             <div className="w-full">
@@ -92,10 +103,7 @@ function DropText() {
                         onClick={(e) => {
                             e.stopPropagation()
 
-                            workflowStore.setState((state) => ({
-                                ...state,
-                                currentFile: null,
-                            }))
+                            checkUserSubscription.mutate()
                         }}
                         className="text-destructive hover:text-destructive/90"
                     >
@@ -129,11 +137,10 @@ function DropText() {
                         onClick={(e) => {
                             e.stopPropagation()
 
-                            toast.loading('Generating captions...')
-                            // stateStore.setState((state) => ({
-                            //     ...state,
-                            //     processing: true,
-                            // }))
+                            stateStore.setState((state) => ({
+                                ...state,
+                                processing: true,
+                            }))
                         }}
                     >
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>

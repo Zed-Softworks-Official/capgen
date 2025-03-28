@@ -4,20 +4,17 @@ import type { WorkflowState } from './types'
 
 export const workflowStore = new Store<WorkflowState>({
     currentFile: null,
+    audio: null,
     progress: {
         value: 0,
-        message: 'Splitting Audio',
+        message: 'Splitting Audio...',
     },
     transcript: null,
-    srt: null,
-    editing: false,
-    captions: null,
 })
 
 export const stateStore = new Store({
     uploading: true,
     processing: false,
-    editing: false,
 })
 
 export function updateProgress(opts: { value: number; message: string }) {

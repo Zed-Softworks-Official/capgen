@@ -4,13 +4,12 @@ import { useStore } from '@tanstack/react-store'
 
 import { Dropzone } from './dropzone'
 import { Processing } from './processing'
-import { Download } from './download'
 import { CaptionSettings } from './caption-settings'
 
 import { stateStore } from '~/lib/store'
 
 export function Workflow() {
-    const { uploading, processing, editing } = useStore(stateStore)
+    const { uploading, processing } = useStore(stateStore)
 
     if (uploading) {
         return (
@@ -35,9 +34,5 @@ export function Workflow() {
         return <Processing />
     }
 
-    if (editing) {
-        return <CaptionSettings />
-    }
-
-    return <Download />
+    return <CaptionSettings />
 }
