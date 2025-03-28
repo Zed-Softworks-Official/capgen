@@ -14,6 +14,12 @@ export const workflowStore = new Store<WorkflowState>({
     captions: null,
 })
 
+export const stateStore = new Store({
+    uploading: true,
+    processing: false,
+    editing: false,
+})
+
 export function updateProgress(opts: { value: number; message: string }) {
     workflowStore.setState((state) => ({
         ...state,

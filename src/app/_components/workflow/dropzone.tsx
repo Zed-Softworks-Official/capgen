@@ -1,10 +1,17 @@
 'use client'
 
+import { useStore } from '@tanstack/react-store'
 import { useDropzone } from 'react-dropzone'
-import { Upload } from 'lucide-react'
+import { Mic, Settings, Upload, Video, Wand2 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { workflowStore } from '~/lib/store'
+import { stateStore, workflowStore } from '~/lib/store'
+import { Card, CardContent } from '../ui/card'
+import { cn } from '~/lib/utils'
+import { Button } from '../ui/button'
+import { Label } from '../ui/label'
+import { Switch } from '../ui/switch'
+import { useState } from 'react'
 
 export function Dropzone() {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -25,7 +32,7 @@ export function Dropzone() {
                 updateCurrentFile({ file, type: 'audio' })
             }
         },
-        onDropRejected(fileRejections, event) {
+        onDropRejected() {
             toast.error('Please upload a valid video')
         },
         accept: {
@@ -35,31 +42,124 @@ export function Dropzone() {
     })
 
     return (
-        <div
-            {...getRootProps()}
-            className="border-input hover:bg-accent flex h-96 w-full max-w-xl flex-col items-center justify-center gap-4 rounded-md border border-dashed p-4 transition-colors duration-200 ease-in-out"
-        >
-            <input {...getInputProps()} />
-            <DropText isDragActive={isDragActive} />
+        <div {...getRootProps()} className="mx-auto max-w-2xl">
+            <Card className="bg-background/50 border-primary/30 hover:border-primary cursor-pointer overflow-hidden border-2 border-dashed shadow-lg transition-colors duration-200 ease-in-out">
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple-900/10 to-violet-900/10"></div>
+                <CardContent className="relative p-6">
+                    <div
+                        className={cn(
+                            'flex flex-col items-center justify-center rounded-lg px-6 py-10 transition-all',
+                            isDragActive
+                                ? 'bg-primary-10 scale-[0.99]'
+                                : 'bg-background/50'
+                        )}
+                    >
+                        <input {...getInputProps()} />
+                        <DropText />
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     )
 }
 
-function DropText(props: { isDragActive: boolean }) {
-    if (props.isDragActive) {
+function DropText() {
+    const { currentFile } = useStore(workflowStore)
+    const [separateSpeakers, setSeparateSpeakers] = useState(true)
+
+    if (currentFile) {
         return (
-            <div className="flex flex-col items-center gap-4">
-                <Upload className="size-6" />
-                <p>Drop the file here</p>
+            <div className="w-full">
+                <div className="bg-accent/40 mb-6 flex items-center rounded-lg p-4">
+                    <div className="from-purple/20 to-violet/20 mr-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br p-1">
+                        <div className="bg-background flex h-full w-full items-center justify-center rounded-full">
+                            {currentFile?.type.startsWith('video/') ? (
+                                <Video className="text-primary h-5 w-5" />
+                            ) : (
+                                <Mic className="text-primary h-5 w-5" />
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                        <p className="truncate font-medium">{currentFile.data.name}</p>
+                        <p className="text-muted-foreground text-sm">
+                            {(currentFile.data.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                            e.stopPropagation()
+
+                            workflowStore.setState((state) => ({
+                                ...state,
+                                currentFile: null,
+                            }))
+                        }}
+                        className="text-destructive hover:text-destructive/90"
+                    >
+                        Remove
+                    </Button>
+                </div>
+
+                <div className="mt-6 space-y-6">
+                    <div className="bg-accent/40 flex items-center justify-between rounded-lg p-4">
+                        <div className="flex items-center gap-3">
+                            <Settings className="text-primary h-5 w-5" />
+                            <Label
+                                htmlFor="separate-speakers"
+                                className="text-sm font-medium"
+                            >
+                                Separate speakers
+                            </Label>
+                        </div>
+                        <Switch
+                            id="separate-speakers"
+                            checked={separateSpeakers}
+                            onCheckedChange={setSeparateSpeakers}
+                            onClick={(e) => {
+                                e.stopPropagation()
+                            }}
+                        />
+                    </div>
+
+                    <Button
+                        className="group relative w-full overflow-hidden"
+                        onClick={(e) => {
+                            e.stopPropagation()
+
+                            toast.loading('Generating captions...')
+                            // stateStore.setState((state) => ({
+                            //     ...state,
+                            //     processing: true,
+                            // }))
+                        }}
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
+                        <span className="relative flex items-center">
+                            <Wand2 className="mr-2 h-4 w-4" /> Generate Captions
+                        </span>
+                    </Button>
+                </div>
             </div>
         )
     }
 
     return (
-        <div className="flex flex-col items-center gap-4">
-            <Upload className="size-6" />
-            <p>Drag and drop a video or audio file here, or click to select a file</p>
-        </div>
+        <>
+            <div className="from-purple/20 to-violet/20 mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br p-1">
+                <div className="bg-background flex h-full w-full items-center justify-center rounded-full">
+                    <Upload className="text-primary h-8 w-8" />
+                </div>
+            </div>
+            <h3 className="mb-2 text-xl font-medium">
+                Drag & drop your audio or video file
+            </h3>
+            <p className="text-muted-foreground mb-6 text-sm">
+                Supports MP3, WAV, MP4, MOV and other formats
+            </p>
+        </>
     )
 }
 

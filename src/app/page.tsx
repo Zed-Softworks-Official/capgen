@@ -26,18 +26,10 @@ export default async function Home() {
     const user = await currentUser()
 
     if (user) {
-        return <WorkflowPage />
+        return <Workflow />
     }
 
     return <LandingPage />
-}
-
-function WorkflowPage() {
-    return (
-        <main className="container mx-auto h-[calc(100vh-15rem)] max-w-xl pt-16">
-            <Workflow />
-        </main>
-    )
 }
 
 function LandingPage() {
