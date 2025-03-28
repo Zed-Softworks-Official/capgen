@@ -12,6 +12,7 @@ export type Caption = {
     text: string
     start: number
     end: number
+    duration: number
     speaker: Speaker
 }
 

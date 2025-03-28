@@ -46,7 +46,15 @@ export function CaptionSettings() {
         <div className="mx-auto flex max-h-[calc(100vh-10rem)] w-full max-w-xl flex-col gap-4 overflow-y-auto">
             <h2 className="text-2xl font-bold">Caption Editor</h2>
 
-            <form className="flex flex-col gap-4">
+            <form
+                className="flex flex-col gap-4"
+                onSubmit={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+
+                    form.handleSubmit()
+                }}
+            >
                 <form.Field
                     name="wordsPerSpeaker"
                     validators={{ onChange: z.number().min(1).max(50) }}
