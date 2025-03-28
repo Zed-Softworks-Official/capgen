@@ -4,13 +4,7 @@ import Link from 'next/link'
 import { type Metadata } from 'next'
 import { Geist } from 'next/font/google'
 
-import {
-    ClerkProvider,
-    SignedIn,
-    SignedOut,
-    SignInButton,
-    UserButton,
-} from '@clerk/nextjs'
+import { ClerkProvider, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs'
 
 import { ThemeProvider } from './_components/theme-provider'
 
@@ -19,6 +13,9 @@ import { TRPCReactProvider } from '~/trpc/react'
 import { env } from '~/env'
 import { Button } from './_components/ui/button'
 import { Toaster } from './_components/ui/sonner'
+import { Logo } from './_components/ui/logo'
+import { User } from 'lucide-react'
+import { UserButton } from './_components/user-button'
 
 export const metadata: Metadata = {
     title: 'CapGen',
@@ -58,18 +55,27 @@ export default function RootLayout({
 
 function Navbar() {
     return (
-        <header className="bg-background sticky top-0 z-50 h-16 border-b">
-            <div className="container mx-auto flex h-full items-center justify-between">
-                <Link href="/" className="font-bold">
-                    CapGen
-                </Link>
+        <header className="border-border/40 bg-background/96 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur-sm">
+            <div className="container mx-auto flex h-16 items-center justify-between">
+                <div className="flex items-center">
+                    <Link href="/" className="flex items-center space-x-2">
+                        <Logo className="h-auto w-28" />
+                    </Link>
+                </div>
+
                 <SignedIn>
                     <UserButton />
                 </SignedIn>
                 <SignedOut>
-                    <Button variant={'ghost'} asChild>
-                        <SignInButton />
-                    </Button>
+                    <SignInButton>
+                        <Button
+                            variant={'ghost'}
+                            size={'icon'}
+                            className="border-primary/20 cursor-pointer rounded-full border"
+                        >
+                            <User className="text-primary size-4" />
+                        </Button>
+                    </SignInButton>
                 </SignedOut>
             </div>
         </header>
