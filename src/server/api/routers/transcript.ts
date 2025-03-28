@@ -8,6 +8,7 @@ export const transcriptRouter = createTRPCRouter({
         .input(
             z.object({
                 audioURL: z.string(),
+                speakerLabels: z.boolean().optional(),
             })
         )
         .mutation(async ({ ctx, input }) => {
@@ -25,13 +26,39 @@ export const transcriptRouter = createTRPCRouter({
                 }
             }
 
-            const srt = await client.transcripts.subtitles(data.id, 'srt')
+            return {
+                data,
+                error: null,
+            }
+        }),
+
+    generateSrt: protectedProcedure
+        .input(
+            z.object({
+                transcriptId: z.string(),
+                maxCharsPerCaption: z.number(),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            const { data, error } = await tryCatch(
+                client.transcripts.subtitles(input.transcriptId, 'srt')
+            )
+
+            if (error || !data) {
+                return {
+                    error: new Error('Failed to generate srt'),
+                    data: null,
+                }
+            }
+
+            const srt = await client.transcripts.subtitles(
+                input.transcriptId,
+                'srt',
+                input.maxCharsPerCaption
+            )
 
             return {
-                data: {
-                    transcript: data,
-                    srt,
-                },
+                data: srt,
                 error: null,
             }
         }),

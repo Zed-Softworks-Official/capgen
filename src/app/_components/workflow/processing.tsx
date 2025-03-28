@@ -29,10 +29,7 @@ export function Processing() {
 
             workflowStore.setState((state) => ({
                 ...state,
-                transcript: {
-                    data: res.data.transcript,
-                    srt: res.data.srt,
-                },
+                transcript: res.data,
                 editing: true,
             }))
         },

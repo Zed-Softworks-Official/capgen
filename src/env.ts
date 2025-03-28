@@ -13,6 +13,12 @@ export const env = createEnv({
         UPLOADTHING_TOKEN: z.string(),
 
         ASSEMBLYAI_API_KEY: z.string(),
+
+        POLAR_ACESS_TOKEN: z.string(),
+        POLAR_PRODUCT_ID: z.string(),
+
+        UPSTASH_REDIS_REST_URL: z.string(),
+        UPSTASH_REDIS_REST_TOKEN: z.string(),
     },
 
     /**
@@ -37,6 +43,12 @@ export const env = createEnv({
         UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
 
         ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY,
+
+        POLAR_ACESS_TOKEN: process.env.POLAR_ACCESS_TOKEN,
+        POLAR_PRODUCT_ID: process.env.POLAR_PRODUCT_ID,
+
+        UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+        UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

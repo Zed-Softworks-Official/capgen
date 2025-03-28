@@ -21,12 +21,12 @@ import { cn } from '~/lib/utils'
 import { Button } from '../ui/button'
 
 export function CaptionSettings() {
-    // const { transcript } = useStore(workflowStore)
+    const { transcript } = useStore(workflowStore)
 
     const form = useForm({
         defaultValues: {
             wordsPerSpeaker: 5,
-            speakers: transcript.utterances.map(
+            speakers: transcript?.utterances?.map(
                 (u) =>
                     ({
                         id: u.speaker,
@@ -84,12 +84,12 @@ export function CaptionSettings() {
                         <div className="flex flex-col gap-2">
                             <Label htmlFor={field.name}>Speakers</Label>
                             <Accordion type="single" collapsible className="w-full">
-                                {field.state.value.map((speaker) => (
+                                {field.state.value?.map((speaker) => (
                                     <AccordionItem key={speaker.id} value={speaker.id}>
                                         <AccordionTrigger>
                                             <span
                                                 className={cn(
-                                                    !field.state.value.find(
+                                                    !field.state.value?.find(
                                                         (s) => s.id === speaker.id
                                                     )?.includeInCaption &&
                                                         'text-muted-foreground line-through'
@@ -108,7 +108,7 @@ export function CaptionSettings() {
                                                     value={speaker.name}
                                                     onChange={(e) => {
                                                         field.handleChange((prev) =>
-                                                            prev.map((s) =>
+                                                            prev?.map((s) =>
                                                                 s.id === speaker.id
                                                                     ? {
                                                                           ...s,
@@ -129,7 +129,7 @@ export function CaptionSettings() {
                                                         value={speaker.textColor}
                                                         onChange={(color) =>
                                                             field.handleChange((prev) =>
-                                                                prev.map((s) =>
+                                                                prev?.map((s) =>
                                                                     s.id === speaker.id
                                                                         ? {
                                                                               ...s,
@@ -156,7 +156,7 @@ export function CaptionSettings() {
                                                     checked={speaker.includeInCaption}
                                                     onCheckedChange={(checked) => {
                                                         field.handleChange((prev) =>
-                                                            prev.map((s) =>
+                                                            prev?.map((s) =>
                                                                 s.id === speaker.id
                                                                     ? {
                                                                           ...s,

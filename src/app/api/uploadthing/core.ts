@@ -3,6 +3,8 @@ import type { NextRequest } from 'next/server'
 import { createUploadthing, type FileRouter } from 'uploadthing/next'
 import { UploadThingError } from 'uploadthing/server'
 
+import { redis } from '~/server/redis'
+
 const f = createUploadthing()
 
 const auth = (req: NextRequest) => {
@@ -22,8 +24,12 @@ export const capgenFileRouter = {
         },
     })
         .middleware(({ req }) => auth(req))
-        .onUploadComplete(({ metadata, file }) => {
-            // TODO: Add to redis to we can auto delete
+        .onUploadComplete(async ({ metadata, file }) => {
+            await redis.zadd('uploads', {
+                score: Date.now() / 1000 + 60 * 60 * 24 * 30,
+                member: file.key,
+            })
+
             return { uploadedBy: metadata.userId }
         }),
 } satisfies FileRouter

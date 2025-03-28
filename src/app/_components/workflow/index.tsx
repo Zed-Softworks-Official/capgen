@@ -10,20 +10,19 @@ import { Download } from './download'
 import { CaptionSettings } from './caption-settings'
 
 export function Workflow() {
-    return <CaptionSettings />
-    // const { currentFile, progress, editing } = useStore(workflowStore)
+    const { currentFile, progress, editing } = useStore(workflowStore)
 
-    // if (!currentFile) {
-    //     return <Dropzone />
-    // }
+    if (!currentFile) {
+        return <Dropzone />
+    }
 
-    // if (progress.value !== 100) {
-    //     return <Processing />
-    // }
+    if (progress.value !== 100) {
+        return <Processing />
+    }
 
-    // if (editing) {
-    //     return <CaptionEditor />
-    // }
+    if (editing) {
+        return <CaptionSettings />
+    }
 
-    // return <Download />
+    return <Download />
 }

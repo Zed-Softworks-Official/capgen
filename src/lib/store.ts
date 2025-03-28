@@ -1,5 +1,4 @@
 import { Store } from '@tanstack/react-store'
-import { transcript } from './test'
 
 import type { WorkflowState } from './types'
 
@@ -9,10 +8,8 @@ export const workflowStore = new Store<WorkflowState>({
         value: 0,
         message: 'Splitting Audio',
     },
-    transcript: {
-        data: transcript,
-        srt: '',
-    },
+    transcript: null,
+    srt: null,
     editing: false,
     captions: null,
 })

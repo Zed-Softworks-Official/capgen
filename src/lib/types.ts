@@ -25,10 +25,8 @@ export type WorkflowState = {
         value: number
         message: string
     }
-    transcript: {
-        data: Transcript
-        srt: string
-    } | null
+    transcript: Transcript | null
+    srt: string | null
     editing: boolean
     captions: Caption[] | null
 }
