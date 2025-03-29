@@ -15,7 +15,6 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '../ui/accordion'
-import ColorPicker from '../ui/color-picker'
 import { Switch } from '../ui/switch'
 import { cn } from '~/lib/utils'
 import { Button } from '../ui/button'
