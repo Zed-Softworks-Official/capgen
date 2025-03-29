@@ -26,8 +26,8 @@ async function processEvent(event: WebhookEvent) {
         externalId: id,
         metadata: {
             currentlyInTrial: true,
-            trialStartedAt: Date.now() / 1000,
-            trialEndsAt: Date.now() / 1000 + 7 * 24 * 60 * 60,
+            trialStartedAt: Math.floor(Date.now() / 1000),
+            trialEndsAt: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
         } as TrialData,
     })
 }
