@@ -202,7 +202,7 @@ function SpeakerPreview(props: { speaker: Speaker }) {
             audioRef.current.pause()
         } else {
             audioRef.current.currentTime = props.speaker.sample.start
-            audioRef.current.play()
+            void audioRef.current.play()
 
             const duration =
                 (props.speaker.sample.end - props.speaker.sample.start) * 1000
