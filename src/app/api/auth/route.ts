@@ -39,7 +39,9 @@ export async function POST(req: NextRequest) {
     const svixSignature = headerPayload.get('svix-signature')
 
     if (!svixId || !svixTimestamp || !svixSignature) {
-        return new NextResponse('Missing svix headers', { status: 400 })
+        return new NextResponse('[CLERK_WEBHOOK] Missing svix headers', {
+            status: 400,
+        })
     }
 
     const payload = (await req.json()) as unknown
@@ -58,9 +60,9 @@ export async function POST(req: NextRequest) {
 
         const wh = new Webhook(env.CLERK_WEBHOOK_SECRET)
         const event = wh.verify(body, {
-            id: svixId,
-            timestamp: svixTimestamp,
-            signature: svixSignature,
+            'svix-id': svixId,
+            'svix-timestamp': svixTimestamp,
+            'svix-signature': svixSignature,
         }) as WebhookEvent
 
         waitUntil(processEvent(event))
