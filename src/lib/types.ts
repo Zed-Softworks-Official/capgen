@@ -3,6 +3,12 @@ import type { Transcript } from 'assemblyai'
 export type Speaker = {
     id: string
     name: string
+    color: string
+    sample: {
+        start: number
+        end: number
+        text: string
+    }
 }
 
 export type WorkflowState = {
@@ -10,12 +16,14 @@ export type WorkflowState = {
         data: File
         type: 'video' | 'audio'
     } | null
-    audio: File | null
+    audio: string | null
     progress: {
         value: number
         message: string
     }
     transcript: Transcript | null
+    speakers: Speaker[]
+    generateSpeakerLabels: boolean
 }
 
 export type TrialData = {
@@ -24,4 +32,4 @@ export type TrialData = {
     currentlyInTrial: boolean
 }
 
-export type RedisBaseKey = 'trial'
+export type RedisBaseKey = 'user'

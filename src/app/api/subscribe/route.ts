@@ -1,9 +1,8 @@
-import { clerkClient, getAuth } from '@clerk/nextjs/server'
+import { getAuth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import type { NextRequest } from 'next/server'
 
 import { env } from '~/env'
-import { tryCatch } from '~/lib/try-catch'
 import { polar } from '~/server/polar'
 
 export async function GET(req: NextRequest) {
@@ -12,32 +11,18 @@ export async function GET(req: NextRequest) {
         return redirect('/')
     }
 
-    const clerk = await clerkClient()
-    const user = await clerk.users.getUser(auth.userId)
-    let customer = await polar.customers.getExternal({
+    const customer = await polar.customers.getExternal({
         externalId: auth.userId,
     })
 
-    // if (customer) {
-    //     const subscription = await polar.subscriptions.list({
-    //         customerId: customer.id,
-    //         active: true,
-    //         productId: env.POLAR_PRODUCT_ID,
-    //     })
+    const subscription = await polar.subscriptions.list({
+        customerId: customer.id,
+        active: true,
+        productId: env.POLAR_PRODUCT_ID,
+    })
 
-    //     if (subscription.result.items.length > 0) {
-    //         return redirect('/')
-    //     }
-    // }
-
-    if (!customer) {
-        const newCustomerData = await polar.customers.create({
-            name: user.fullName!,
-            email: user.emailAddresses[0]?.emailAddress ?? '',
-            externalId: auth.userId,
-        })
-
-        customer = newCustomerData
+    if (subscription.result.items.length > 0) {
+        return redirect('/')
     }
 
     const checkout = await polar.checkouts.create({

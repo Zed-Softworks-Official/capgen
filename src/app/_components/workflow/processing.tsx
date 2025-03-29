@@ -5,7 +5,7 @@ import { useStore } from '@tanstack/react-store'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
-import { updateProgress, workflowStore } from '~/lib/store'
+import { stateStore, updateProgress, workflowStore } from '~/lib/store'
 import { uploadAudioFile } from '~/lib/uploadthing'
 import { Progress } from '~/app/_components/ui/progress'
 
@@ -14,7 +14,7 @@ import { tryCatch } from '~/lib/try-catch'
 import { api } from '~/trpc/react'
 
 export function Processing() {
-    const { progress, currentFile } = useStore(workflowStore)
+    const { progress, currentFile, generateSpeakerLabels } = useStore(workflowStore)
 
     const transcribeAudio = api.transcript.transcribeAudio.useMutation({
         onSuccess: (res) => {
@@ -30,8 +30,13 @@ export function Processing() {
 
             workflowStore.setState((state) => ({
                 ...state,
-                transcript: res.data,
-                editing: true,
+                transcript: res.data.transcript,
+                speakers: res.data.speakers ?? [],
+            }))
+
+            stateStore.setState((state) => ({
+                ...state,
+                processing: false,
             }))
         },
         onError: (e) => {
@@ -76,7 +81,13 @@ export function Processing() {
 
         transcribeAudio.mutate({
             audioURL: uploadedData.value.url,
+            speakerLabels: generateSpeakerLabels,
         })
+
+        workflowStore.setState((state) => ({
+            ...state,
+            audio: uploadedData.value.url,
+        }))
     })
 
     return (

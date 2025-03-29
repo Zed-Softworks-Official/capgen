@@ -10,6 +10,8 @@ export const workflowStore = new Store<WorkflowState>({
         message: 'Splitting Audio...',
     },
     transcript: null,
+    speakers: [],
+    generateSpeakerLabels: true,
 })
 
 export const stateStore = new Store({

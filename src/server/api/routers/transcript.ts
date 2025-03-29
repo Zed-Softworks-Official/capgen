@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { tryCatch } from '~/lib/try-catch'
+import type { Speaker } from '~/lib/types'
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc'
 import { client } from '~/server/assemblyai'
 
@@ -8,14 +9,14 @@ export const transcriptRouter = createTRPCRouter({
         .input(
             z.object({
                 audioURL: z.string(),
-                speakerLabels: z.boolean().optional(),
+                speakerLabels: z.boolean(),
             })
         )
         .mutation(async ({ ctx, input }) => {
             const { data, error } = await tryCatch(
                 client.transcripts.transcribe({
                     audio: input.audioURL,
-                    speaker_labels: true,
+                    speaker_labels: input.speakerLabels,
                 })
             )
 
@@ -26,8 +27,27 @@ export const transcriptRouter = createTRPCRouter({
                 }
             }
 
+            const speakers = data.utterances?.map(
+                (u) =>
+                    ({
+                        id: u.speaker,
+                        name: u.speaker,
+                        color: `#${Math.floor(Math.random() * 16777215)
+                            .toString(16)
+                            .padStart(6, '0')}`,
+                        sample: {
+                            start: u.start,
+                            end: u.end,
+                            text: u.text,
+                        },
+                    }) as Speaker
+            )
+
             return {
-                data,
+                data: {
+                    transcript: data,
+                    speakers,
+                },
                 error: null,
             }
         }),

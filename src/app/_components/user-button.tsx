@@ -12,6 +12,7 @@ import {
 } from './ui/dropdown-menu'
 import { Button } from './ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { SignOutButton } from '@clerk/nextjs'
 
 export async function UserButton() {
     const user = await currentUser()
@@ -55,10 +56,12 @@ export async function UserButton() {
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                    <LogOut className="mr-2 size-4" />
-                    Logout
-                </DropdownMenuItem>
+                <SignOutButton>
+                    <DropdownMenuItem>
+                        <LogOut className="mr-2 size-4" />
+                        Logout
+                    </DropdownMenuItem>
+                </SignOutButton>
             </DropdownMenuContent>
         </DropdownMenu>
     )

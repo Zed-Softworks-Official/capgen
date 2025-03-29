@@ -20,55 +20,15 @@ import { cn } from '~/lib/utils'
 import { Button } from '../ui/button'
 import { ArrowLeft, Download, Pause, Play, Users } from 'lucide-react'
 import { Card, CardContent } from '../ui/card'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Checkbox } from '../ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 
-const mockSpeakers = [
-    {
-        id: 'speaker-1',
-        name: 'Speaker 1',
-        color: '#9333ea',
-        samples: [
-            {
-                start: 0,
-                end: 5,
-                text: "Hello, I'm the first speaker in this conversation.",
-            },
-        ],
-    },
-    {
-        id: 'speaker-2',
-        name: 'Speaker 2',
-        color: '#a855f7',
-        samples: [
-            {
-                start: 6,
-                end: 12,
-                text: "And I'm the second speaker. Nice to meet you all.",
-            },
-        ],
-    },
-    {
-        id: 'speaker-3',
-        name: 'Speaker 3',
-        color: '#c084fc',
-        samples: [
-            {
-                start: 13,
-                end: 20,
-                text: "I'm speaker three. Let's discuss the project timeline.",
-            },
-        ],
-    },
-]
-
 export function CaptionSettings() {
-    const { transcript } = useStore(workflowStore)
+    const { transcript, speakers } = useStore(workflowStore)
 
-    const [speakers, setSpeakers] = useState(mockSpeakers)
     const [selectedSpeakers, setSelectedSpeakers] = useState<string[]>(
-        mockSpeakers.map((s) => s.id)
+        speakers.map((speaker) => speaker.id)
     )
 
     const handleSpeakerToggle = (speakerId: string) => {
@@ -156,7 +116,7 @@ export function CaptionSettings() {
                                                 htmlFor={speaker.id}
                                                 className="flex-1 cursor-pointer"
                                             >
-                                                {speaker.name}
+                                                Speaker {speaker.name}
                                             </Label>
                                             <SpeakerPreview speaker={speaker} />
                                         </div>
@@ -183,23 +143,18 @@ export function CaptionSettings() {
                                                 key={`preview-${speaker.id}`}
                                                 className="mb-4"
                                             >
-                                                {speaker.samples.map(
-                                                    (sample, sampleIdx) => (
-                                                        <div
-                                                            key={`sample-${sampleIdx}`}
-                                                            className="mb-2"
+                                                {speaker.sample && (
+                                                    <div className="mb-2">
+                                                        <span
+                                                            className="font-medium"
+                                                            style={{
+                                                                color: speaker.color,
+                                                            }}
                                                         >
-                                                            <span
-                                                                className="font-medium"
-                                                                style={{
-                                                                    color: speaker.color,
-                                                                }}
-                                                            >
-                                                                {speaker.name}:
-                                                            </span>{' '}
-                                                            <span>{sample.text}</span>
-                                                        </div>
-                                                    )
+                                                            {speaker.name}:
+                                                        </span>{' '}
+                                                        <span>{speaker.sample.text}</span>
+                                                    </div>
                                                 )}
                                             </div>
                                         ))}
@@ -233,10 +188,50 @@ export function CaptionSettings() {
 }
 
 function SpeakerPreview(props: { speaker: Speaker }) {
+    const { audio } = useStore(workflowStore)
+
     const [isPlaying, setIsPlaying] = useState(false)
+    const [audioUrl, setAudioUrl] = useState<string | null>(audio)
+
+    const audioRef = useRef<HTMLAudioElement>(null)
+
+    const togglePlayback = () => {
+        if (!audioRef.current || !audioUrl) return
+
+        if (isPlaying) {
+            audioRef.current.pause()
+        } else {
+            audioRef.current.currentTime = props.speaker.sample.start
+            audioRef.current.play()
+
+            const duration =
+                (props.speaker.sample.end - props.speaker.sample.start) * 1000
+
+            setTimeout(() => {
+                if (audioRef.current) {
+                    audioRef.current.pause()
+                    setIsPlaying(false)
+                }
+            }, duration)
+        }
+
+        setIsPlaying(!isPlaying)
+    }
+
+    useEffect(() => {
+        if (!audioRef.current) return
+
+        const handleEnded = () => setIsPlaying(false)
+        audioRef.current.addEventListener('ended', handleEnded)
+
+        return () => {
+            audioRef.current?.removeEventListener('ended', handleEnded)
+        }
+    }, [])
 
     return (
         <TooltipProvider>
+            {audioUrl && <audio ref={audioRef} src={audioUrl} />}
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
@@ -246,6 +241,8 @@ function SpeakerPreview(props: { speaker: Speaker }) {
                             'relative size-8 rounded-full',
                             isPlaying && 'bg-primary/20'
                         )}
+                        onClick={togglePlayback}
+                        disabled={!audioUrl}
                     >
                         {isPlaying && (
                             <span className="bg-primary/10 absolute inset-0 animate-ping rounded-full opacity-75"></span>

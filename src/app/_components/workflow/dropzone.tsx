@@ -69,12 +69,19 @@ function DropText() {
     const [separateSpeakers, setSeparateSpeakers] = useState(true)
 
     const checkUserSubscription = api.user.checkUserSubscription.useMutation({
-        onSuccess: () => {
-            stateStore.setState((state) => ({
-                ...state,
+        onSuccess: (res) => {
+            if (!res.value) {
+                toast.error(res.message)
+                return
+            }
+
+            stateStore.setState(() => ({
                 uploading: false,
                 processing: true,
             }))
+        },
+        onError: () => {
+            toast.error('Error verifying subscription')
         },
     })
 
@@ -103,7 +110,10 @@ function DropText() {
                         onClick={(e) => {
                             e.stopPropagation()
 
-                            checkUserSubscription.mutate()
+                            workflowStore.setState((state) => ({
+                                ...state,
+                                currentFile: null,
+                            }))
                         }}
                         className="text-destructive hover:text-destructive/90"
                     >
@@ -125,7 +135,14 @@ function DropText() {
                         <Switch
                             id="separate-speakers"
                             checked={separateSpeakers}
-                            onCheckedChange={setSeparateSpeakers}
+                            onCheckedChange={(checked) => {
+                                setSeparateSpeakers(checked)
+
+                                workflowStore.setState((state) => ({
+                                    ...state,
+                                    generateSpeakerLabels: checked,
+                                }))
+                            }}
                             onClick={(e) => {
                                 e.stopPropagation()
                             }}
@@ -133,14 +150,12 @@ function DropText() {
                     </div>
 
                     <Button
-                        className="group relative w-full overflow-hidden"
+                        className="group relative w-full cursor-pointer overflow-hidden"
+                        disabled={checkUserSubscription.isPending}
                         onClick={(e) => {
                             e.stopPropagation()
 
-                            stateStore.setState((state) => ({
-                                ...state,
-                                processing: true,
-                            }))
+                            checkUserSubscription.mutate()
                         }}
                     >
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
