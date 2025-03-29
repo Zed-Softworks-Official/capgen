@@ -1,6 +1,7 @@
 import { clerkClient, getAuth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import type { NextRequest } from 'next/server'
+
 import { env } from '~/env'
 import { tryCatch } from '~/lib/try-catch'
 import { polar } from '~/server/polar'
@@ -13,15 +14,9 @@ export async function GET(req: NextRequest) {
 
     const clerk = await clerkClient()
     const user = await clerk.users.getUser(auth.userId)
-    let { data: customer, error: customerError } = await tryCatch(
-        polar.customers.getExternal({
-            externalId: auth.userId,
-        })
-    )
-
-    if (customerError) {
-        console.error(customerError)
-    }
+    let customer = await polar.customers.getExternal({
+        externalId: auth.userId,
+    })
 
     // if (customer) {
     //     const subscription = await polar.subscriptions.list({
@@ -37,8 +32,8 @@ export async function GET(req: NextRequest) {
 
     if (!customer) {
         const newCustomerData = await polar.customers.create({
-            name: user.fullName as string,
-            email: user.emailAddresses[0]?.emailAddress as string,
+            name: user.fullName!,
+            email: user.emailAddresses[0]?.emailAddress ?? '',
             externalId: auth.userId,
         })
 

@@ -10,6 +10,7 @@ const f = createUploadthing()
 const auth = (req: NextRequest) => {
     const { userId } = getAuth(req)
     if (!userId) {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw new UploadThingError('Unauthorized')
     }
 
