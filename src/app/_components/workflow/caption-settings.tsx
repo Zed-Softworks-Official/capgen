@@ -1,21 +1,11 @@
 'use client'
 
 import { useStore } from '@tanstack/react-store'
-import { useForm } from '@tanstack/react-form'
 
 import { stateStore, workflowStore } from '~/lib/store'
 import type { Speaker } from '~/lib/types'
-import { transcript } from '~/lib/test'
 import { Label } from '../ui/label'
-import { Input } from '../ui/input'
-import { z } from 'zod'
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from '../ui/accordion'
-import { Switch } from '../ui/switch'
+
 import { cn } from '~/lib/utils'
 import { Button } from '../ui/button'
 import { ArrowLeft, Download, Pause, Play, Users } from 'lucide-react'
@@ -27,7 +17,7 @@ import { toast } from 'sonner'
 import { api } from '~/trpc/react'
 
 export function CaptionSettings() {
-    const { speakers } = useStore(workflowStore)
+    const { speakers, transcript } = useStore(workflowStore)
 
     const [selectedSpeakers, setSelectedSpeakers] = useState<string[]>(
         speakers.map((speaker) => speaker.id)
@@ -176,7 +166,7 @@ export function CaptionSettings() {
                                 </div>
 
                                 <DownloadButton
-                                    transcriptId={transcript.id}
+                                    transcriptId={transcript?.id}
                                     selectedSpeakers={selectedSpeakers}
                                 />
                             </CardContent>
@@ -188,7 +178,7 @@ export function CaptionSettings() {
     )
 }
 
-function DownloadButton(props: { transcriptId: string; selectedSpeakers: string[] }) {
+function DownloadButton(props: { transcriptId?: string; selectedSpeakers: string[] }) {
     const generateSrt = api.transcript.generateSrt.useMutation({
         onSuccess: (res) => {
             if (res.error) {
@@ -209,6 +199,11 @@ function DownloadButton(props: { transcriptId: string; selectedSpeakers: string[
         <Button
             className="group relative w-full cursor-pointer overflow-hidden"
             onClick={() => {
+                if (!props.transcriptId) {
+                    toast.error('No transcript id found')
+                    return
+                }
+
                 generateSrt.mutate({
                     transcriptId: props.transcriptId,
                     maxCharsPerCaption: 100,
