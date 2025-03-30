@@ -74,6 +74,11 @@ export function Processing() {
             return
         }
 
+        workflowStore.setState((state) => ({
+            ...state,
+            audioFile: uploadedData.value.file,
+        }))
+
         updateProgress({
             value: 66,
             message: 'Analyzing audio...',
@@ -83,11 +88,6 @@ export function Processing() {
             audioURL: uploadedData.value.url,
             speakerLabels: generateSpeakerLabels,
         })
-
-        workflowStore.setState((state) => ({
-            ...state,
-            audio: uploadedData.value.url,
-        }))
     })
 
     return (

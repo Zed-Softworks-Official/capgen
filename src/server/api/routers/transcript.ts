@@ -57,6 +57,7 @@ export const transcriptRouter = createTRPCRouter({
             z.object({
                 transcriptId: z.string(),
                 maxCharsPerCaption: z.number(),
+                includedSpeakers: z.array(z.string()),
             })
         )
         .mutation(async ({ ctx, input }) => {
@@ -71,11 +72,7 @@ export const transcriptRouter = createTRPCRouter({
                 }
             }
 
-            const srt = await client.transcripts.subtitles(
-                input.transcriptId,
-                'srt',
-                input.maxCharsPerCaption
-            )
+            const srt = await client.transcripts.subtitles(input.transcriptId, 'srt')
 
             return {
                 data: srt,

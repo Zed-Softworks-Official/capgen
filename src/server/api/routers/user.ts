@@ -6,6 +6,13 @@ import { env } from '~/env'
 
 export const userRouter = createTRPCRouter({
     checkUserSubscription: protectedProcedure.mutation(async ({ ctx }) => {
+        if (env.NODE_ENV === 'development') {
+            return {
+                value: true,
+                message: null,
+            }
+        }
+
         const customer = await polar.customers.getExternal({
             externalId: ctx.auth.userId,
         })

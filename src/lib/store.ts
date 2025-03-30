@@ -4,7 +4,7 @@ import type { WorkflowState } from './types'
 
 export const workflowStore = new Store<WorkflowState>({
     currentFile: null,
-    audio: null,
+    audioFile: null,
     progress: {
         value: 0,
         message: 'Splitting Audio...',

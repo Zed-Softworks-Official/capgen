@@ -23,9 +23,11 @@ import { Card, CardContent } from '../ui/card'
 import { useEffect, useRef, useState } from 'react'
 import { Checkbox } from '../ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
+import { toast } from 'sonner'
+import { api } from '~/trpc/react'
 
 export function CaptionSettings() {
-    const { transcript, speakers } = useStore(workflowStore)
+    const { speakers } = useStore(workflowStore)
 
     const [selectedSpeakers, setSelectedSpeakers] = useState<string[]>(
         speakers.map((speaker) => speaker.id)
@@ -47,13 +49,20 @@ export function CaptionSettings() {
                         <Button
                             variant={'ghost'}
                             size={'icon'}
-                            onClick={() =>
+                            onClick={() => {
                                 stateStore.setState((prev) => ({
                                     ...prev,
                                     uploading: true,
                                     processing: false,
                                 }))
-                            }
+
+                                workflowStore.setState((prev) => ({
+                                    ...prev,
+                                    transcript: null,
+                                    currentFile: null,
+                                    audio: null,
+                                }))
+                            }}
                             className="mr-2 cursor-pointer"
                         >
                             <ArrowLeft className="size-5" />
@@ -166,18 +175,10 @@ export function CaptionSettings() {
                                     )}
                                 </div>
 
-                                <Button
-                                    className="group relative w-full overflow-hidden"
-                                    onClick={() => {
-                                        console.log('download')
-                                    }}
-                                    disabled={selectedSpeakers.length === 0}
-                                >
-                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
-                                    <span className="relative flex items-center">
-                                        <Download className="mr-2 h-4 w-4" /> Download SRT
-                                    </span>
-                                </Button>
+                                <DownloadButton
+                                    transcriptId={transcript.id}
+                                    selectedSpeakers={selectedSpeakers}
+                                />
                             </CardContent>
                         </Card>
                     </div>
@@ -187,47 +188,72 @@ export function CaptionSettings() {
     )
 }
 
+function DownloadButton(props: { transcriptId: string; selectedSpeakers: string[] }) {
+    const generateSrt = api.transcript.generateSrt.useMutation({
+        onSuccess: (res) => {
+            if (res.error) {
+                toast.error('Failed to generate srt')
+                return
+            }
+
+            const blob = new Blob([res.data], { type: 'text/srt' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = 'transcript.srt'
+            a.click()
+        },
+    })
+
+    return (
+        <Button
+            className="group relative w-full cursor-pointer overflow-hidden"
+            onClick={() => {
+                generateSrt.mutate({
+                    transcriptId: props.transcriptId,
+                    maxCharsPerCaption: 100,
+                    includedSpeakers: props.selectedSpeakers,
+                })
+            }}
+            disabled={props.selectedSpeakers.length === 0 || generateSrt.isPending}
+        >
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
+            <span className="relative flex items-center">
+                <Download className="mr-2 h-4 w-4" /> Download SRT
+            </span>
+        </Button>
+    )
+}
+
 function SpeakerPreview(props: { speaker: Speaker }) {
-    const { audio } = useStore(workflowStore)
-
-    const [isPlaying, setIsPlaying] = useState(false)
-    const [audioUrl, setAudioUrl] = useState<string | null>(audio)
-
     const audioRef = useRef<HTMLAudioElement>(null)
 
-    const togglePlayback = () => {
+    const [isPlaying, setIsPlaying] = useState(false)
+
+    const { audioFile } = useStore(workflowStore)
+    const { audioUrl } = useAudioUrl(audioFile, audioRef)
+
+    const togglePlayback = async () => {
         if (!audioRef.current || !audioUrl) return
 
         if (isPlaying) {
             audioRef.current.pause()
+            setIsPlaying(false)
         } else {
+            audioRef.current.pause()
             audioRef.current.currentTime = props.speaker.sample.start
-            void audioRef.current.play()
-
             const duration =
                 (props.speaker.sample.end - props.speaker.sample.start) * 1000
 
+            await audioRef.current.play()
+            setIsPlaying(true)
+
             setTimeout(() => {
-                if (audioRef.current) {
-                    audioRef.current.pause()
-                    setIsPlaying(false)
-                }
+                setIsPlaying(false)
+                audioRef.current?.pause()
             }, duration)
         }
-
-        setIsPlaying(!isPlaying)
     }
-
-    useEffect(() => {
-        if (!audioRef.current) return
-
-        const handleEnded = () => setIsPlaying(false)
-        audioRef.current.addEventListener('ended', handleEnded)
-
-        return () => {
-            audioRef.current?.removeEventListener('ended', handleEnded)
-        }
-    }, [])
 
     return (
         <TooltipProvider>
@@ -260,4 +286,33 @@ function SpeakerPreview(props: { speaker: Speaker }) {
             </Tooltip>
         </TooltipProvider>
     )
+}
+
+function useAudioUrl(
+    audioFile: File | null,
+    audioRef: React.RefObject<HTMLAudioElement | null>
+) {
+    const [audioUrl, setAudioUrl] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (!audioFile) {
+            setAudioUrl(null)
+            return
+        }
+
+        const url = URL.createObjectURL(audioFile)
+        setAudioUrl(url)
+
+        return () => {
+            URL.revokeObjectURL(url)
+        }
+    }, [audioFile])
+
+    useEffect(() => {
+        if (audioRef.current && audioUrl) {
+            audioRef.current.load()
+        }
+    }, [audioUrl])
+
+    return { audioUrl }
 }

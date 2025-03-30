@@ -27,7 +27,7 @@ export const capgenFileRouter = {
         .middleware(({ req }) => auth(req))
         .onUploadComplete(async ({ metadata, file }) => {
             await redis.zadd('uploads', {
-                score: Date.now() / 1000 + 60 * 60 * 24 * 30,
+                score: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
                 member: file.key,
             })
 

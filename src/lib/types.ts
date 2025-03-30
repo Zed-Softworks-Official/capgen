@@ -16,7 +16,7 @@ export type WorkflowState = {
         data: File
         type: 'video' | 'audio'
     } | null
-    audio: string | null
+    audioFile: File | null
     progress: {
         value: number
         message: string

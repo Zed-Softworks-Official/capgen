@@ -34,5 +34,6 @@ export async function uploadAudioFile(audioData: FileData | File) {
         url: uploadedData.ufsUrl,
         filename: uploadedData.name,
         size: uploadedData.size,
+        file: audioFile,
     })
 }
