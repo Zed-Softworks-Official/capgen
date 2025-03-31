@@ -152,9 +152,6 @@ function LandingPage() {
                             <CardContent className="relative pt-6">
                                 <ul className="space-y-3">
                                     <PricingFeature>Unlimited audio files</PricingFeature>
-                                    <PricingFeature>
-                                        Up to 10 hours of processing per month
-                                    </PricingFeature>
                                     <PricingFeature>Speaker separation</PricingFeature>
                                     <PricingFeature>
                                         Multiple export formats (SRT, VTT, TXT)
@@ -162,10 +159,6 @@ function LandingPage() {
                                     <PricingFeature>
                                         Audio preview for verification
                                     </PricingFeature>
-                                    <PricingFeature>
-                                        Cloud storage for your captions
-                                    </PricingFeature>
-                                    <PricingFeature>Priority processing</PricingFeature>
                                 </ul>
                             </CardContent>
                             <CardFooter className="relative">

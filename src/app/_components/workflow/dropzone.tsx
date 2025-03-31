@@ -45,7 +45,6 @@ export function Dropzone() {
     return (
         <div {...getRootProps()} className="mx-auto max-w-2xl">
             <Card className="bg-background/50 border-primary/30 hover:border-primary cursor-pointer overflow-hidden border-2 border-dashed shadow-lg transition-colors duration-200 ease-in-out">
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple-900/10 to-violet-900/10"></div>
                 <CardContent className="relative p-6">
                     <div
                         className={cn(

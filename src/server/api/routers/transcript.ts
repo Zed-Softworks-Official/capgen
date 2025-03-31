@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { tryCatch } from '~/lib/try-catch'
-import type { Speaker } from '~/lib/types'
+import type { Captions, Line, Speaker } from '~/lib/types'
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc'
 import { client } from '~/server/assemblyai'
 
@@ -27,27 +27,40 @@ export const transcriptRouter = createTRPCRouter({
                 }
             }
 
-            const speakers = data.utterances?.map(
-                (u) =>
-                    ({
-                        id: u.speaker,
-                        name: u.speaker,
-                        color: `#${Math.floor(Math.random() * 16777215)
-                            .toString(16)
-                            .padStart(6, '0')}`,
-                        sample: {
-                            start: u.start,
-                            end: u.end,
-                            text: u.text,
-                        },
-                    }) as Speaker
-            )
+            const captions: Captions = {
+                speakers: data.utterances!.reduce((acc, curr) => {
+                    if (!acc.find((s) => s.id === curr.speaker)) {
+                        acc.push({
+                            id: curr.speaker,
+                            name: curr.speaker,
+                            color: `#${Math.floor(Math.random() * 16777215)
+                                .toString(16)
+                                .padStart(6, '0')}`,
+                        })
+                    }
+                    return acc
+                }, [] as Speaker[]),
+                transcript: data.utterances!.reduce(
+                    (acc, curr) => {
+                        if (!acc[curr.speaker]) {
+                            acc[curr.speaker] = []
+                        }
+
+                        acc[curr.speaker]!.push({
+                            text: curr.text,
+                            start: curr.start,
+                            end: curr.end,
+                            speakerId: curr.speaker,
+                        })
+                        return acc
+                    },
+                    {} as Record<string, Line[]>
+                ),
+                duration: data.audio_duration,
+            }
 
             return {
-                data: {
-                    transcript: data,
-                    speakers,
-                },
+                data: captions,
                 error: null,
             }
         }),

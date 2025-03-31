@@ -12,12 +12,13 @@ import { Progress } from '~/app/_components/ui/progress'
 import { extractAudioFromVideo } from '~/lib/extract'
 import { tryCatch } from '~/lib/try-catch'
 import { api } from '~/trpc/react'
+import { db } from '~/lib/db'
 
 export function Processing() {
     const { progress, currentFile, generateSpeakerLabels } = useStore(workflowStore)
 
     const transcribeAudio = api.transcript.transcribeAudio.useMutation({
-        onSuccess: (res) => {
+        onSuccess: (res, input) => {
             if (res.error) {
                 toast.error(res.error.message)
                 return
@@ -38,6 +39,18 @@ export function Processing() {
                 ...state,
                 processing: false,
             }))
+
+            void db.recents.add({
+                captions: res.data,
+                speakerCount: res.data.speakers.length,
+                duration: res.data.duration ?? 0,
+                audioUrl: input.audioURL,
+                file: {
+                    name: currentFile?.data.name ?? 'Unknown',
+                    type: (currentFile?.data.type ?? 'audio') as 'video' | 'audio',
+                },
+                createdAt: Date.now(),
+            })
         },
         onError: (e) => {
             toast.error(e.message)

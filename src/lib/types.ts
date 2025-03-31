@@ -1,14 +1,22 @@
-import type { Transcript } from 'assemblyai'
+export type CapGenTrascript = Record<string, Line[]>
+
+export type Captions = {
+    speakers: Speaker[]
+    transcript: CapGenTrascript
+    duration?: number | null
+}
+
+export type Line = {
+    text: string
+    start: number
+    end: number
+    speakerId: string
+}
 
 export type Speaker = {
     id: string
     name: string
     color: string
-    sample: {
-        start: number
-        end: number
-        text: string
-    }
 }
 
 export type WorkflowState = {
@@ -16,12 +24,12 @@ export type WorkflowState = {
         data: File
         type: 'video' | 'audio'
     } | null
-    audioFile: File | null
+    audioFile: string | File | null
     progress: {
         value: number
         message: string
     }
-    transcript: Transcript | null
+    transcript: CapGenTrascript | null
     speakers: Speaker[]
     generateSpeakerLabels: boolean
 }

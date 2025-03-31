@@ -1,27 +1,36 @@
 'use client'
 
+import { toast } from 'sonner'
 import { useStore } from '@tanstack/react-store'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowLeft, Download, Pause, Play, Users } from 'lucide-react'
 
 import { stateStore, workflowStore } from '~/lib/store'
 import type { Speaker } from '~/lib/types'
-import { Label } from '../ui/label'
-
 import { cn } from '~/lib/utils'
+
+import { Label } from '../ui/label'
 import { Button } from '../ui/button'
-import { ArrowLeft, Download, Pause, Play, Users } from 'lucide-react'
 import { Card, CardContent } from '../ui/card'
-import { useEffect, useRef, useState } from 'react'
 import { Checkbox } from '../ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
-import { toast } from 'sonner'
+
 import { api } from '~/trpc/react'
 
 export function CaptionSettings() {
-    const { speakers, transcript } = useStore(workflowStore)
+    const { speakers, transcript, audioFile } = useStore(workflowStore)
+
+    const audioRef = useRef<HTMLAudioElement>(null)
+    const { audioUrl } = useAudioUrl(audioFile, audioRef)
 
     const [selectedSpeakers, setSelectedSpeakers] = useState<string[]>(
         speakers.map((speaker) => speaker.id)
     )
+
+    const fullTranscript = useMemo(() => {
+        const segments = Object.values(transcript ?? {}).flat()
+        return segments.sort((a, b) => a.start - b.start)
+    }, [transcript])
 
     const handleSpeakerToggle = (speakerId: string) => {
         setSelectedSpeakers((prev) =>
@@ -66,6 +75,7 @@ export function CaptionSettings() {
                     </div>
                 </div>
 
+                {audioUrl && <audio ref={audioRef} src={audioUrl} />}
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     <div className="md:col-span-2">
                         <Card className="border-primary/20 overflow-hidden shadow-lg">
@@ -117,7 +127,11 @@ export function CaptionSettings() {
                                             >
                                                 Speaker {speaker.name}
                                             </Label>
-                                            <SpeakerPreview speaker={speaker} />
+                                            <SpeakerPreview
+                                                speaker={speaker}
+                                                audioUrl={audioUrl}
+                                                audioRef={audioRef}
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -135,24 +149,30 @@ export function CaptionSettings() {
                                     </span>
                                 </h2>
                                 <div className="bg-accent/30 border-primary/10 mb-6 h-64 overflow-y-auto rounded-lg border p-4">
-                                    {speakers
-                                        .filter((s) => selectedSpeakers.includes(s.id))
-                                        .map((speaker, idx) => (
+                                    {fullTranscript
+                                        .filter((line) =>
+                                            selectedSpeakers.includes(line.speakerId)
+                                        )
+                                        .map((line) => (
                                             <div
-                                                key={`preview-${speaker.id}`}
+                                                key={`preview-${line.speakerId}-${line.start}`}
                                                 className="mb-4"
                                             >
-                                                {speaker.sample && (
+                                                {line.text && (
                                                     <div className="mb-2">
                                                         <span
                                                             className="font-medium"
                                                             style={{
-                                                                color: speaker.color,
+                                                                color: speakers.find(
+                                                                    (s) =>
+                                                                        s.id ===
+                                                                        line.speakerId
+                                                                )?.color,
                                                             }}
                                                         >
-                                                            {speaker.name}:
+                                                            {line.speakerId}:
                                                         </span>{' '}
-                                                        <span>{speaker.sample.text}</span>
+                                                        <span>{line.text}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -165,10 +185,7 @@ export function CaptionSettings() {
                                     )}
                                 </div>
 
-                                <DownloadButton
-                                    transcriptId={transcript?.id}
-                                    selectedSpeakers={selectedSpeakers}
-                                />
+                                {/* <DownloadButton selectedSpeakers={selectedSpeakers} /> */}
                             </CardContent>
                         </Card>
                     </div>
@@ -178,81 +195,82 @@ export function CaptionSettings() {
     )
 }
 
-function DownloadButton(props: { transcriptId?: string; selectedSpeakers: string[] }) {
-    const generateSrt = api.transcript.generateSrt.useMutation({
-        onSuccess: (res) => {
-            if (res.error) {
-                toast.error('Failed to generate srt')
-                return
-            }
+// function DownloadButton(props: { selectedSpeakers: string[] }) {
+//     const generateSrt = api.transcript.generateSrt.useMutation({
+//         onSuccess: (res) => {
+//             if (res.error) {
+//                 toast.error('Failed to generate srt')
+//                 return
+//             }
 
-            const blob = new Blob([res.data], { type: 'text/srt' })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = 'transcript.srt'
-            a.click()
-        },
-    })
+//             const blob = new Blob([res.data], { type: 'text/srt' })
+//             const url = URL.createObjectURL(blob)
+//             const a = document.createElement('a')
+//             a.href = url
+//             a.download = 'transcript.srt'
+//             a.click()
+//         },
+//     })
 
-    return (
-        <Button
-            className="group relative w-full cursor-pointer overflow-hidden"
-            onClick={() => {
-                if (!props.transcriptId) {
-                    toast.error('No transcript id found')
-                    return
-                }
+//     return (
+//         <Button
+//             className="group relative w-full cursor-pointer overflow-hidden"
+//             onClick={() => {
+//                 console.log('Downloading srt')
+//                 // if (!props.transcriptId) {
+//                 //     toast.error('No transcript id found')
+//                 //     return
+//                 // }
 
-                generateSrt.mutate({
-                    transcriptId: props.transcriptId,
-                    maxCharsPerCaption: 100,
-                    includedSpeakers: props.selectedSpeakers,
-                })
-            }}
-            disabled={props.selectedSpeakers.length === 0 || generateSrt.isPending}
-        >
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
-            <span className="relative flex items-center">
-                <Download className="mr-2 h-4 w-4" /> Download SRT
-            </span>
-        </Button>
-    )
-}
+//                 // generateSrt.mutate({
+//                 //     transcriptId: props.transcriptId,
+//                 //     maxCharsPerCaption: 100,
+//                 //     includedSpeakers: props.selectedSpeakers,
+//                 // })
+//             }}
+//             disabled={props.selectedSpeakers.length === 0 || generateSrt.isPending}
+//         >
+//             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
+//             <span className="relative flex items-center">
+//                 <Download className="mr-2 h-4 w-4" /> Download SRT
+//             </span>
+//         </Button>
+//     )
+// }
 
-function SpeakerPreview(props: { speaker: Speaker }) {
-    const audioRef = useRef<HTMLAudioElement>(null)
-
+function SpeakerPreview(props: {
+    speaker: Speaker
+    audioUrl: string | null
+    audioRef: React.RefObject<HTMLAudioElement | null>
+}) {
     const [isPlaying, setIsPlaying] = useState(false)
 
-    const { audioFile } = useStore(workflowStore)
-    const { audioUrl } = useAudioUrl(audioFile, audioRef)
+    const { transcript } = useStore(workflowStore)
 
     const togglePlayback = async () => {
-        if (!audioRef.current || !audioUrl) return
+        if (!props.audioRef.current || !props.audioUrl) return
+        const sample = transcript?.[props.speaker.id]?.[0]
 
         if (isPlaying) {
-            audioRef.current.pause()
+            props.audioRef.current.pause()
             setIsPlaying(false)
         } else {
-            audioRef.current.pause()
-            audioRef.current.currentTime = props.speaker.sample.start
-            const duration =
-                (props.speaker.sample.end - props.speaker.sample.start) * 1000
+            props.audioRef.current.pause()
+            props.audioRef.current.currentTime = sample?.start ?? 0
+            const duration = (sample?.end ?? 0) - (sample?.start ?? 0)
 
-            await audioRef.current.play()
+            await props.audioRef.current.play()
             setIsPlaying(true)
 
             setTimeout(() => {
                 setIsPlaying(false)
-                audioRef.current?.pause()
+                props.audioRef.current?.pause()
             }, duration)
         }
     }
 
     return (
         <TooltipProvider>
-            {audioUrl && <audio ref={audioRef} src={audioUrl} />}
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
@@ -263,7 +281,7 @@ function SpeakerPreview(props: { speaker: Speaker }) {
                             isPlaying && 'bg-primary/20'
                         )}
                         onClick={togglePlayback}
-                        disabled={!audioUrl}
+                        disabled={!props.audioUrl}
                     >
                         {isPlaying && (
                             <span className="bg-primary/10 absolute inset-0 animate-ping rounded-full opacity-75"></span>
@@ -284,7 +302,7 @@ function SpeakerPreview(props: { speaker: Speaker }) {
 }
 
 function useAudioUrl(
-    audioFile: File | null,
+    audioFile: string | File | null,
     audioRef: React.RefObject<HTMLAudioElement | null>
 ) {
     const [audioUrl, setAudioUrl] = useState<string | null>(null)
@@ -292,6 +310,11 @@ function useAudioUrl(
     useEffect(() => {
         if (!audioFile) {
             setAudioUrl(null)
+            return
+        }
+
+        if (typeof audioFile === 'string') {
+            setAudioUrl(audioFile)
             return
         }
 
