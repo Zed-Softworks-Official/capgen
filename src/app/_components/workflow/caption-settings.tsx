@@ -5,7 +5,7 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Download, Pause, Play, Users } from 'lucide-react'
 
-import { stateStore, workflowStore } from '~/lib/store'
+import { audioPreviewStore, stateStore, workflowStore } from '~/lib/store'
 import type { Speaker } from '~/lib/types'
 import { cn } from '~/lib/utils'
 
@@ -16,12 +16,13 @@ import { Checkbox } from '../ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 
 import { api } from '~/trpc/react'
+import { SpeakerPreview } from './speaker-preview'
 
 export function CaptionSettings() {
     const { speakers, transcript, audioFile } = useStore(workflowStore)
+    const { audioUrl } = useStore(audioPreviewStore)
 
     const audioRef = useRef<HTMLAudioElement>(null)
-    const { audioUrl } = useAudioUrl(audioFile, audioRef)
 
     const [selectedSpeakers, setSelectedSpeakers] = useState<string[]>(
         speakers.map((speaker) => speaker.id)
@@ -129,7 +130,6 @@ export function CaptionSettings() {
                                             </Label>
                                             <SpeakerPreview
                                                 speaker={speaker}
-                                                audioUrl={audioUrl}
                                                 audioRef={audioRef}
                                             />
                                         </div>
@@ -237,100 +237,3 @@ export function CaptionSettings() {
 //         </Button>
 //     )
 // }
-
-function SpeakerPreview(props: {
-    speaker: Speaker
-    audioUrl: string | null
-    audioRef: React.RefObject<HTMLAudioElement | null>
-}) {
-    const [isPlaying, setIsPlaying] = useState(false)
-
-    const { transcript } = useStore(workflowStore)
-
-    const togglePlayback = async () => {
-        if (!props.audioRef.current || !props.audioUrl) return
-        const sample = transcript?.[props.speaker.id]?.[0]
-
-        if (isPlaying) {
-            props.audioRef.current.pause()
-            setIsPlaying(false)
-        } else {
-            props.audioRef.current.pause()
-            props.audioRef.current.currentTime = sample?.start ?? 0
-            const duration = (sample?.end ?? 0) - (sample?.start ?? 0)
-
-            await props.audioRef.current.play()
-            setIsPlaying(true)
-
-            setTimeout(() => {
-                setIsPlaying(false)
-                props.audioRef.current?.pause()
-            }, duration)
-        }
-    }
-
-    return (
-        <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button
-                        variant={'ghost'}
-                        size={'icon'}
-                        className={cn(
-                            'relative size-8 rounded-full',
-                            isPlaying && 'bg-primary/20'
-                        )}
-                        onClick={togglePlayback}
-                        disabled={!props.audioUrl}
-                    >
-                        {isPlaying && (
-                            <span className="bg-primary/10 absolute inset-0 animate-ping rounded-full opacity-75"></span>
-                        )}
-                        {isPlaying ? (
-                            <Pause className="size-4" />
-                        ) : (
-                            <Play className="size-4" />
-                        )}
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>Play Sample</p>
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
-    )
-}
-
-function useAudioUrl(
-    audioFile: string | File | null,
-    audioRef: React.RefObject<HTMLAudioElement | null>
-) {
-    const [audioUrl, setAudioUrl] = useState<string | null>(null)
-
-    useEffect(() => {
-        if (!audioFile) {
-            setAudioUrl(null)
-            return
-        }
-
-        if (typeof audioFile === 'string') {
-            setAudioUrl(audioFile)
-            return
-        }
-
-        const url = URL.createObjectURL(audioFile)
-        setAudioUrl(url)
-
-        return () => {
-            URL.revokeObjectURL(url)
-        }
-    }, [audioFile])
-
-    useEffect(() => {
-        if (audioRef.current && audioUrl) {
-            audioRef.current.load()
-        }
-    }, [audioUrl])
-
-    return { audioUrl }
-}

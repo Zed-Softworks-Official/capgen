@@ -23,7 +23,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
-import { stateStore, workflowStore } from '~/lib/store'
+import { audioPreviewStore, stateStore, workflowStore } from '~/lib/store'
 
 export function Recents() {
     const recents = useLiveQuery(() => db.recents.toArray())
@@ -137,6 +137,12 @@ export function Recents() {
                                                     speakers:
                                                         transcription.captions.speakers,
                                                     audioFile: transcription.audioUrl,
+                                                }))
+
+                                                audioPreviewStore.setState((state) => ({
+                                                    ...state,
+                                                    audioUrl: transcription.audioUrl,
+                                                    isPlaying: false,
                                                 }))
                                             }}
                                         >

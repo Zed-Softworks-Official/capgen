@@ -5,7 +5,7 @@ import { useStore } from '@tanstack/react-store'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
-import { stateStore, updateProgress, workflowStore } from '~/lib/store'
+import { audioPreviewStore, stateStore, updateProgress, workflowStore } from '~/lib/store'
 import { uploadAudioFile } from '~/lib/uploadthing'
 import { Progress } from '~/app/_components/ui/progress'
 
@@ -38,6 +38,12 @@ export function Processing() {
             stateStore.setState((state) => ({
                 ...state,
                 processing: false,
+            }))
+
+            audioPreviewStore.setState((state) => ({
+                ...state,
+                isPlaying: false,
+                audioUrl: input.audioURL,
             }))
 
             void db.recents.add({

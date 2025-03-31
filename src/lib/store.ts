@@ -19,6 +19,12 @@ export const stateStore = new Store({
     processing: false,
 })
 
+export const audioPreviewStore = new Store({
+    audioUrl: null as string | null,
+    isPlaying: false,
+    currentSample: null,
+})
+
 export function updateProgress(opts: { value: number; message: string }) {
     workflowStore.setState((state) => ({
         ...state,
