@@ -12,6 +12,7 @@ import { Card, CardContent } from '../ui/card'
 import { Checkbox } from '../ui/checkbox'
 
 import { SpeakerPreview } from './speaker-preview'
+import { DownloadButton } from './download'
 
 export function CaptionSettings() {
     const { speakers, transcript } = useStore(workflowStore)
@@ -180,7 +181,7 @@ export function CaptionSettings() {
                                     )}
                                 </div>
 
-                                {/* <DownloadButton selectedSpeakers={selectedSpeakers} /> */}
+                                <DownloadButton selectedSpeakers={selectedSpeakers} />
                             </CardContent>
                         </Card>
                     </div>
@@ -189,46 +190,3 @@ export function CaptionSettings() {
         </main>
     )
 }
-
-// function DownloadButton(props: { selectedSpeakers: string[] }) {
-//     const generateSrt = api.transcript.generateSrt.useMutation({
-//         onSuccess: (res) => {
-//             if (res.error) {
-//                 toast.error('Failed to generate srt')
-//                 return
-//             }
-
-//             const blob = new Blob([res.data], { type: 'text/srt' })
-//             const url = URL.createObjectURL(blob)
-//             const a = document.createElement('a')
-//             a.href = url
-//             a.download = 'transcript.srt'
-//             a.click()
-//         },
-//     })
-
-//     return (
-//         <Button
-//             className="group relative w-full cursor-pointer overflow-hidden"
-//             onClick={() => {
-//                 console.log('Downloading srt')
-//                 // if (!props.transcriptId) {
-//                 //     toast.error('No transcript id found')
-//                 //     return
-//                 // }
-
-//                 // generateSrt.mutate({
-//                 //     transcriptId: props.transcriptId,
-//                 //     maxCharsPerCaption: 100,
-//                 //     includedSpeakers: props.selectedSpeakers,
-//                 // })
-//             }}
-//             disabled={props.selectedSpeakers.length === 0 || generateSrt.isPending}
-//         >
-//             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
-//             <span className="relative flex items-center">
-//                 <Download className="mr-2 h-4 w-4" /> Download SRT
-//             </span>
-//         </Button>
-//     )
-// }
