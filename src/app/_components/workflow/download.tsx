@@ -1,9 +1,11 @@
 'use client'
 
-import { type Cue, type NodeList, stringifySync } from 'subtitle'
+import { type NodeList, stringifySync } from 'subtitle'
 import { useCallback, useState } from 'react'
 import { useStore } from '@tanstack/react-store'
 import { Download } from 'lucide-react'
+
+import JSZip from 'jszip'
 
 import { workflowStore } from '~/lib/store'
 import { Button } from '../ui/button'
@@ -34,7 +36,7 @@ export function DownloadButton(props: { selectedSpeakers: string[] }) {
             )
 
         return nodes
-    }, [props.selectedSpeakers, transcript])
+    }, [transcript, props.selectedSpeakers])
 
     const handleDownload = useCallback(
         (nodes: Record<string, NodeList>) => {
@@ -45,13 +47,12 @@ export function DownloadButton(props: { selectedSpeakers: string[] }) {
             })
 
             // Create a zip file with JSZip
-            const JSZip = require('jszip')
             const zip = new JSZip()
 
             // Add each SRT file to the zip
             Object.entries(nodes).forEach(([speaker, _], index) => {
                 const fileName = `${speaker}.srt`
-                zip.file(fileName, srtFileData[index])
+                zip.file(fileName, srtFileData[index] ?? 'unknown')
             })
 
             // Generate the zip file

@@ -12,7 +12,7 @@ export const transcriptRouter = createTRPCRouter({
                 speakerLabels: z.boolean(),
             })
         )
-        .mutation(async ({ ctx, input }) => {
+        .mutation(async ({ input }) => {
             const { data, error } = await tryCatch(
                 client.transcripts.transcribe({
                     audio: input.audioURL,

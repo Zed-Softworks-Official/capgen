@@ -1,4 +1,4 @@
-import { FFmpeg, type FileData } from '@ffmpeg/ffmpeg'
+import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile } from '@ffmpeg/util'
 import { err, ok } from 'neverthrow'
 

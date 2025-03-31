@@ -8,9 +8,8 @@ import { waitUntil } from '@vercel/functions'
 
 import { env } from '~/env'
 import { tryCatch } from '~/lib/try-catch'
-import { getRedisKey, redis } from '~/server/redis'
-import type { TrialData } from '~/lib/types'
 import { polar } from '~/server/polar'
+import type { TrialData } from '~/lib/types'
 
 const allowedEvents = ['user.created'] as WebhookEventType[]
 
