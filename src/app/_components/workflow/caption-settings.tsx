@@ -1,25 +1,20 @@
 'use client'
 
-import { toast } from 'sonner'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeft, Download, Pause, Play, Users } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
+import { ArrowLeft, Users } from 'lucide-react'
 
 import { audioPreviewStore, stateStore, workflowStore } from '~/lib/store'
-import type { Speaker } from '~/lib/types'
-import { cn } from '~/lib/utils'
 
 import { Label } from '../ui/label'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
 import { Checkbox } from '../ui/checkbox'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 
-import { api } from '~/trpc/react'
 import { SpeakerPreview } from './speaker-preview'
 
 export function CaptionSettings() {
-    const { speakers, transcript, audioFile } = useStore(workflowStore)
+    const { speakers, transcript } = useStore(workflowStore)
     const { audioUrl } = useStore(audioPreviewStore)
 
     const audioRef = useRef<HTMLAudioElement>(null)

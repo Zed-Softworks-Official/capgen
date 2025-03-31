@@ -30,10 +30,20 @@ export function SpeakerPreview(props: {
             setIsCurrentPlaying(false)
         } else {
             props.audioRef.current.pause()
-            props.audioRef.current.currentTime = sample?.start ?? 0
+            props.audioRef.current.currentTime = (sample?.start ?? 0) / 1000
             const duration = (sample?.end ?? 0) - (sample?.start ?? 0)
 
             await props.audioRef.current.play()
+
+            setTimeout(() => {
+                props.audioRef.current?.pause()
+                setIsCurrentPlaying(false)
+
+                audioPreviewStore.setState((state) => ({
+                    ...state,
+                    isPlaying: false,
+                }))
+            }, duration)
         }
 
         audioPreviewStore.setState((state) => ({
