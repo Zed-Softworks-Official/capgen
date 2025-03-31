@@ -1,5 +1,5 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg'
-import { fetchFile } from '@ffmpeg/util'
+import { fetchFile, toBlobURL } from '@ffmpeg/util'
 import { err, ok } from 'neverthrow'
 
 import { tryCatch } from './try-catch'
@@ -10,13 +10,19 @@ type ExtractionOpts = {
 }
 
 export async function extractAudioFromVideo({ video, logAction }: ExtractionOpts) {
+    const baseUrl = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd'
     const ffmpeg = new FFmpeg()
 
     ffmpeg.on('log', ({ message }) => {
         logAction(message)
     })
 
-    const { error: loadError } = await tryCatch(ffmpeg.load())
+    const { error: loadError } = await tryCatch(
+        ffmpeg.load({
+            coreURL: await toBlobURL(`${baseUrl}/ffmpeg-core.js`, 'text/javascript'),
+            wasmURL: await toBlobURL(`${baseUrl}/ffmpeg-core.wasm`, 'application/wasm'),
+        })
+    )
     if (loadError) {
         return err(new Error('Unable to load file'))
     }
