@@ -40,4 +40,4 @@ export type TrialData = {
     currentlyInTrial: boolean
 }
 
-export type RedisBaseKey = 'user'
+export type RedisBaseKey = 'user' | 'customer'

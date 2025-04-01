@@ -18,6 +18,17 @@ const auth = (req: NextRequest) => {
 }
 
 export const capgenFileRouter = {
+    profilePictureUploader: f({
+        image: {
+            maxFileCount: 1,
+            maxFileSize: '16MB',
+        },
+    })
+        .middleware(({ req }) => auth(req))
+        .onUploadComplete(async ({ metadata, file }) => {
+            return { uploadedBy: metadata.userId }
+        }),
+
     audioUploader: f({
         audio: {
             maxFileSize: '2GB',

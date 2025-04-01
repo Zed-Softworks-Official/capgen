@@ -1,11 +1,13 @@
 import type { FileData } from '@ffmpeg/ffmpeg'
 import { err, ok } from 'neverthrow'
-import { generateReactHelpers } from '@uploadthing/react'
+import { generateReactHelpers, generateUploadDropzone } from '@uploadthing/react'
 
 import type { CapGenFileRouter } from '~/app/api/uploadthing/core'
 import { tryCatch } from './try-catch'
 
 const { uploadFiles } = generateReactHelpers<CapGenFileRouter>()
+
+export const UploadDropzone = generateUploadDropzone<CapGenFileRouter>()
 
 export async function uploadAudioFile(audioData: FileData | File) {
     let audioFile: File
