@@ -1,3 +1,4 @@
+import { clerkClient } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import { tryCatch } from '~/lib/try-catch'
 import type { Captions, Line, Speaker } from '~/lib/types'
@@ -8,11 +9,12 @@ export const transcriptRouter = createTRPCRouter({
     transcribeAudio: protectedProcedure
         .input(
             z.object({
+                filename: z.string(),
                 audioURL: z.string(),
                 speakerLabels: z.boolean(),
             })
         )
-        .mutation(async ({ input }) => {
+        .mutation(async ({ ctx, input }) => {
             const { data, error } = await tryCatch(
                 client.transcripts.transcribe({
                     audio: input.audioURL,
@@ -58,6 +60,28 @@ export const transcriptRouter = createTRPCRouter({
                 ),
                 duration: data.audio_duration,
             }
+
+            const clerk = await clerkClient()
+            const user = await clerk.users.getUser(ctx.auth.userId)
+            await clerk.users.updateUserMetadata(ctx.auth.userId, {
+                publicMetadata: {
+                    timeUsed:
+                        (user.publicMetadata.timeUsed as number) +
+                        (captions.duration ?? 0),
+                    recentFiles: [
+                        ...(user.publicMetadata.recentFiles as {
+                            filename: string
+                            duration: number
+                            createdAt: number
+                        }[]),
+                        {
+                            filename: input.filename,
+                            duration: captions.duration ?? 0,
+                            createdAt: Date.now(),
+                        },
+                    ],
+                },
+            })
 
             return {
                 data: captions,

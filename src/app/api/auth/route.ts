@@ -2,14 +2,18 @@ import { Webhook } from 'svix'
 
 import { headers } from 'next/headers'
 import { type NextRequest, NextResponse } from 'next/server'
-import type { WebhookEvent, WebhookEventType } from '@clerk/nextjs/server'
+import {
+    clerkClient,
+    type WebhookEvent,
+    type WebhookEventType,
+} from '@clerk/nextjs/server'
 
 import { waitUntil } from '@vercel/functions'
 
 import { env } from '~/env'
 import { tryCatch } from '~/lib/try-catch'
 import { polar } from '~/server/polar'
-import type { TrialData } from '~/lib/types'
+import type { PublicUserMetadata, TrialData } from '~/lib/types'
 
 const allowedEvents = ['user.created'] as WebhookEventType[]
 
@@ -18,6 +22,15 @@ async function processEvent(event: WebhookEvent) {
     if (event.type !== 'user.created') return
 
     const { id, email_addresses, first_name, last_name } = event.data
+
+    const clerk = await clerkClient()
+    await clerk.users.updateUserMetadata(id, {
+        publicMetadata: {
+            timeUsed: 0,
+            timeLimit: 10 * 3600,
+            recentFiles: [],
+        } satisfies PublicUserMetadata,
+    })
 
     await polar.customers.create({
         name: `${first_name} ${last_name}`,

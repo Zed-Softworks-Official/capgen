@@ -41,3 +41,13 @@ export type TrialData = {
 }
 
 export type RedisBaseKey = 'user' | 'customer'
+
+export type PublicUserMetadata = {
+    timeUsed: number
+    timeLimit: number
+    recentFiles: {
+        filename: string
+        duration: number
+        createdAt: number
+    }[]
+}

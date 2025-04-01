@@ -104,6 +104,7 @@ export function Processing() {
         })
 
         transcribeAudio.mutate({
+            filename: currentFile?.data.name ?? 'Unknown',
             audioURL: uploadedData.value.url,
             speakerLabels: generateSpeakerLabels,
         })
