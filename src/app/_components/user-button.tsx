@@ -13,6 +13,7 @@ import {
 import { Button } from './ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { SignOutButton } from '@clerk/nextjs'
+import Link from 'next/link'
 
 export async function UserButton() {
     const user = await currentUser()
@@ -46,9 +47,11 @@ export async function UserButton() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                    <DropdownMenuItem>
-                        <User className="mr-2 size-4" />
-                        Profile
+                    <DropdownMenuItem asChild>
+                        <Link href={'/profile'}>
+                            <User className="mr-2 size-4" />
+                            Profile
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                         <CreditCard className="mr-2 size-4" />
