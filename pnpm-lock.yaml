@@ -17,6 +17,9 @@ importers:
       '@ffmpeg/util':
         specifier: ^0.12.2
         version: 0.12.2
+      '@polar-sh/nextjs':
+        specifier: ^0.3.23
+        version: 0.3.23(next@15.2.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(zod@3.24.2)
       '@polar-sh/sdk':
         specifier: ^0.32.0
         version: 0.32.0(zod@3.24.2)
@@ -86,6 +89,9 @@ importers:
       assemblyai:
         specifier: ^4.9.0
         version: 4.9.0
+      canvas-confetti:
+        specifier: ^1.9.3
+        version: 1.9.3
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -168,6 +174,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.0.15
         version: 4.0.15
+      '@types/canvas-confetti':
+        specifier: ^1.9.0
+        version: 1.9.0
       '@types/lodash.debounce':
         specifier: ^4.0.9
         version: 4.0.9
@@ -522,6 +531,15 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
+
+  '@polar-sh/adapter-utils@0.1.15':
+    resolution: {integrity: sha512-hYHdvFRAaV8Z8FrPYZX2uTxEVwHNKy/woLFDn5SSxPo+Uqmrog7a/v8XZN7T9Sz8UePTFRUY6m+QbEBAPjDK9A==}
+
+  '@polar-sh/nextjs@0.3.23':
+    resolution: {integrity: sha512-AiQDffXnpaydBeCghDsBaGHTanUEG2039JbukDCBbbbzgbjdl1NpgpmPh62le+Fl0f+s21qU+ZCnwEeJJelrTg==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      next: ^15.0.0 || ^15.2.0-canary.*
 
   '@polar-sh/sdk@0.32.0':
     resolution: {integrity: sha512-YMgnH0+TziBNNVIF88DZv2/Kpx8VCMcCfS4U8fWHfmPkBJr9lsuZos0muWX5eCThV83iZiDn4Npu/0m6FySKvw==}
@@ -1163,6 +1181,9 @@ packages:
   '@tybys/wasm-util@0.9.0':
     resolution: {integrity: sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw==}
 
+  '@types/canvas-confetti@1.9.0':
+    resolution: {integrity: sha512-aBGj/dULrimR1XDZLtG9JwxX1b4HPRF6CX9Yfwh3NvstZEm1ZL7RBnel4keCPSqs1ANRu1u2Aoz9R+VmtjYuTg==}
+
   '@types/cookie@0.6.0':
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
 
@@ -1472,6 +1493,9 @@ packages:
 
   caniuse-lite@1.0.30001707:
     resolution: {integrity: sha512-3qtRjw/HQSMlDWf+X79N206fepf4SOOU6SQLMaq/0KkZLmSjPxAkBOQQ+FxbHKfHmYLZFfdWsO3KA90ceHPSnw==}
+
+  canvas-confetti@1.9.3:
+    resolution: {integrity: sha512-rFfTURMvmVEX1gyXFgn5QMn81bYk70qa0HLzcIOSVEyl57n6o9ItHeBtUSWdvKAPY0xlvBHno4/v3QPrT83q9g==}
 
   chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
@@ -3321,6 +3345,22 @@ snapshots:
 
   '@nolyfill/is-core-module@1.0.39': {}
 
+  '@polar-sh/adapter-utils@0.1.15(zod@3.24.2)':
+    dependencies:
+      '@polar-sh/sdk': 0.32.0(zod@3.24.2)
+    transitivePeerDependencies:
+      - '@modelcontextprotocol/sdk'
+      - zod
+
+  '@polar-sh/nextjs@0.3.23(next@15.2.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(zod@3.24.2)':
+    dependencies:
+      '@polar-sh/adapter-utils': 0.1.15(zod@3.24.2)
+      '@polar-sh/sdk': 0.32.0(zod@3.24.2)
+      next: 15.2.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+    transitivePeerDependencies:
+      - '@modelcontextprotocol/sdk'
+      - zod
+
   '@polar-sh/sdk@0.32.0(zod@3.24.2)':
     dependencies:
       standardwebhooks: 1.0.0
@@ -3926,6 +3966,8 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
+  '@types/canvas-confetti@1.9.0': {}
+
   '@types/cookie@0.6.0': {}
 
   '@types/estree@1.0.6': {}
@@ -4268,6 +4310,8 @@ snapshots:
   callsites@3.1.0: {}
 
   caniuse-lite@1.0.30001707: {}
+
+  canvas-confetti@1.9.3: {}
 
   chalk@4.1.2:
     dependencies:

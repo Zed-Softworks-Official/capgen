@@ -147,7 +147,7 @@ function ProfileCard(props: { user: User }) {
                         className="border-primary/30 hover:bg-primary/10 mt-2"
                         asChild
                     >
-                        <Link href={'https://accounts.capgen.io'}>
+                        <Link href={'https://accounts.capgen.io/user'} target="_blank">
                             <ExternalLink className="mr-2 h-3 w-3" />
                             Manage Account with Clerk
                         </Link>
@@ -192,25 +192,16 @@ async function SubscriptionCard(props: { user: User }) {
     }
 
     const customerPortalUrl = async () => {
-        if (customer.metadata.currentlyInTrial) {
-            return '/api/subscribe'
-        }
-
         if (subscription?.status === 'active') {
-            const { data, error } = await tryCatch(
-                polar.customerSessions.create({
-                    customerId: customer.id,
-                })
-            )
-
-            if (error || !data) {
-                return '/api/subscribe'
-            }
-
-            return data.customerPortalUrl
+            return '/api/portal'
         }
 
-        return '/api/subscribe'
+        const urlParams = new URLSearchParams({
+            productId: env.POLAR_PRODUCT_ID,
+            customerExternalId: props.user.id,
+        })
+
+        return `/api/subscribe?${urlParams.toString()}`
     }
 
     return (
@@ -276,7 +267,7 @@ async function SubscriptionCard(props: { user: User }) {
                     )}
 
                     <Button asChild className="group relative overflow-hidden">
-                        <Link href={await customerPortalUrl()}>
+                        <Link href={await customerPortalUrl()} target="_blank">
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
                             <span className="relative flex items-center">
                                 <ExternalLink className="mr-2 h-4 w-4" />
