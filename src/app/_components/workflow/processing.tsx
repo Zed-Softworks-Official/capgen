@@ -107,6 +107,7 @@ export function Processing() {
             filename: currentFile?.data.name ?? 'Unknown',
             audioURL: uploadedData.value.url,
             speakerLabels: generateSpeakerLabels,
+            wordsPerCaption: 5,
         })
     })
 

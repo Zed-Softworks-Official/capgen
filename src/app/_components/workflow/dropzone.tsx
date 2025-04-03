@@ -13,6 +13,7 @@ import { Label } from '../ui/label'
 import { Switch } from '../ui/switch'
 import { useState } from 'react'
 import { api } from '~/trpc/react'
+import { Input } from '../ui/input'
 
 export function Dropzone() {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -65,7 +66,9 @@ export function Dropzone() {
 
 function DropText() {
     const { currentFile } = useStore(workflowStore)
+
     const [separateSpeakers, setSeparateSpeakers] = useState(true)
+    const [wordsPerCaption, setWordsPerCaption] = useState(7)
 
     const checkUserSubscription = api.user.checkUserSubscription.useMutation({
         onSuccess: (res) => {
@@ -147,6 +150,24 @@ function DropText() {
                             }}
                         />
                     </div>
+
+                    {/* <div className="bg-accent/40 flex items-center justify-between rounded-lg p-4">
+                        <div className="flex items-center gap-3">
+                            
+                            <Label
+                                htmlFor="words-per-caption"
+                                className="text-sm font-medium"
+                            >
+                                Words per caption
+                            </Label>
+                        </div>
+                        <Input
+                            id="words-per-caption"
+                            type="number"
+                            value={wordsPerCaption}
+                            onChange={(e) => setWordsPerCaption(e.target.valueAsNumber)}
+                        />
+                    </div> */}
 
                     <Button
                         className="group relative w-full cursor-pointer overflow-hidden"

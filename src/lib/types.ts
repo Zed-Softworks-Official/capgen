@@ -32,6 +32,7 @@ export type WorkflowState = {
     transcript: CapGenTrascript | null
     speakers: Speaker[]
     generateSpeakerLabels: boolean
+    wordsPerCaption: number
 }
 
 export type TrialData = {

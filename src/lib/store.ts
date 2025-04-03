@@ -12,6 +12,7 @@ export const workflowStore = new Store<WorkflowState>({
     transcript: null,
     speakers: [],
     generateSpeakerLabels: true,
+    wordsPerCaption: 7,
 })
 
 export const stateStore = new Store({

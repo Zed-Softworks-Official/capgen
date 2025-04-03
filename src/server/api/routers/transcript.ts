@@ -12,6 +12,8 @@ export const transcriptRouter = createTRPCRouter({
                 filename: z.string(),
                 audioURL: z.string(),
                 speakerLabels: z.boolean(),
+                speakerCount: z.number().optional(),
+                wordsPerCaption: z.number().optional(),
             })
         )
         .mutation(async ({ ctx, input }) => {
@@ -19,10 +21,11 @@ export const transcriptRouter = createTRPCRouter({
                 client.transcripts.transcribe({
                     audio: input.audioURL,
                     speaker_labels: input.speakerLabels,
+                    speakers_expected: input.speakerCount,
                 })
             )
 
-            if (error || !data) {
+            if (error || !data?.utterances) {
                 return {
                     error: new Error('Failed to transcribe audio'),
                     data: null,
@@ -30,7 +33,7 @@ export const transcriptRouter = createTRPCRouter({
             }
 
             const captions: Captions = {
-                speakers: data.utterances!.reduce((acc, curr) => {
+                speakers: data.utterances.reduce((acc, curr) => {
                     if (!acc.find((s) => s.id === curr.speaker)) {
                         acc.push({
                             id: curr.speaker,
@@ -42,18 +45,40 @@ export const transcriptRouter = createTRPCRouter({
                     }
                     return acc
                 }, [] as Speaker[]),
-                transcript: data.utterances!.reduce(
+                transcript: data.utterances.reduce(
                     (acc, curr) => {
                         if (!acc[curr.speaker]) {
                             acc[curr.speaker] = []
                         }
 
-                        acc[curr.speaker]!.push({
-                            text: curr.text,
-                            start: curr.start,
-                            end: curr.end,
-                            speakerId: curr.speaker,
-                        })
+                        const words = curr.text.split(/\s+/)
+                        const wordsPerCaption = input.wordsPerCaption ?? words.length
+
+                        // Split text into chunks based on wordsPerCaption
+                        for (let i = 0; i < words.length; i += wordsPerCaption) {
+                            const chunk = words.slice(i, i + wordsPerCaption).join(' ')
+                            const chunkDuration = curr.end - curr.start
+
+                            // Calculate proportional start and end times for the chunk
+                            const chunkStart =
+                                i === 0
+                                    ? curr.start
+                                    : curr.start + chunkDuration * (i / words.length)
+                            const chunkEnd =
+                                i + wordsPerCaption >= words.length
+                                    ? curr.end
+                                    : curr.start +
+                                      chunkDuration *
+                                          ((i + wordsPerCaption) / words.length)
+
+                            acc[curr.speaker]?.push({
+                                text: chunk,
+                                start: chunkStart,
+                                end: chunkEnd,
+                                speakerId: curr.speaker,
+                            })
+                        }
+
                         return acc
                     },
                     {} as Record<string, Line[]>
