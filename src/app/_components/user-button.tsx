@@ -53,9 +53,11 @@ export async function UserButton() {
                             Profile
                         </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <CreditCard className="mr-2 size-4" />
-                        Billing
+                    <DropdownMenuItem asChild>
+                        <Link href={'/api/portal'}>
+                            <CreditCard className="mr-2 size-4" />
+                            Billing
+                        </Link>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
