@@ -31,11 +31,10 @@ export default async function SuccessPage() {
         productId: env.POLAR_PRODUCT_ID,
     })
 
-    if (subscriptions.result.items.length === 0) {
-        // return redirect('/')
-    }
-
     const subscriptionData = subscriptions.result.items[0]
+    if (!subscriptionData) {
+        return redirect('/')
+    }
 
     return (
         <main className="flex flex-1 flex-col">
@@ -63,13 +62,13 @@ export default async function SuccessPage() {
                                 <div className="border-primary/10 flex items-center justify-between border-b pb-2">
                                     <span className="font-medium">Plan</span>
                                     <span className="font-bold">
-                                        {subscriptionData?.product.name}
+                                        {subscriptionData.product.name}
                                     </span>
                                 </div>
 
                                 <div className="border-primary/10 flex items-center justify-between border-b pb-2">
                                     <span className="font-medium">Price</span>
-                                    <span>{subscriptionData?.amount} / month</span>
+                                    <span>${subscriptionData.amount / 100} / month</span>
                                 </div>
 
                                 <div className="border-primary/10 flex items-center justify-between border-b pb-2">
@@ -78,7 +77,7 @@ export default async function SuccessPage() {
                                         Next billing date
                                     </span>
                                     <span>
-                                        {subscriptionData?.currentPeriodEnd?.toLocaleDateString()}
+                                        {subscriptionData.currentPeriodEnd?.toLocaleDateString()}
                                     </span>
                                 </div>
                             </div>
