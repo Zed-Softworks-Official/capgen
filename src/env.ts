@@ -11,10 +11,12 @@ export const env = createEnv({
 
         CLERK_SECRET_KEY: z.string(),
         CLERK_WEBHOOK_SECRET: z.string(),
+        CLERK_DOMAIN: z.string(),
 
         UPLOADTHING_TOKEN: z.string(),
 
         ASSEMBLYAI_API_KEY: z.string(),
+        REV_AI_API_KEY: z.string(),
 
         POLAR_ACESS_TOKEN: z.string(),
         POLAR_PRODUCT_ID: z.string(),
@@ -22,6 +24,8 @@ export const env = createEnv({
 
         UPSTASH_REDIS_REST_URL: z.string(),
         UPSTASH_REDIS_REST_TOKEN: z.string(),
+
+        CONVEX_DEPLOYMENT: z.string(),
     },
 
     /**
@@ -31,6 +35,7 @@ export const env = createEnv({
      */
     client: {
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
+        NEXT_PUBLIC_CONVEX_URL: z.string(),
     },
 
     /**
@@ -42,11 +47,13 @@ export const env = createEnv({
 
         CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
         CLERK_WEBHOOK_SECRET: process.env.CLERK_WEBHOOK_SECRET,
+        CLERK_DOMAIN: process.env.CLERK_DOMAIN,
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
 
         UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
 
         ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY,
+        REV_AI_API_KEY: process.env.REV_AI_API_KEY,
 
         POLAR_ACESS_TOKEN: process.env.POLAR_ACCESS_TOKEN,
         POLAR_PRODUCT_ID: process.env.POLAR_PRODUCT_ID,
@@ -54,6 +61,9 @@ export const env = createEnv({
 
         UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
         UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+
+        CONVEX_DEPLOYMENT: process.env.CONVEX_DEPLOYMENT,
+        NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

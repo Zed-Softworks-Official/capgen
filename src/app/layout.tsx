@@ -4,11 +4,10 @@ import Link from 'next/link'
 import { type Metadata } from 'next'
 import { Geist } from 'next/font/google'
 
-import { ClerkProvider, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs'
+import { ClerkProvider, SignInButton } from '@clerk/nextjs'
+import { Authenticated, Unauthenticated } from 'convex/react'
 
 import { ThemeProvider } from './_components/theme-provider'
-
-import { TRPCReactProvider } from '~/trpc/react'
 
 import { env } from '~/env'
 import { Button } from './_components/ui/button'
@@ -16,6 +15,7 @@ import { Toaster } from './_components/ui/sonner'
 import { Logo } from './_components/ui/logo'
 import { User } from 'lucide-react'
 import { UserButton } from './_components/user-button'
+import { ConvexProvider } from './_components/convex-provider'
 
 export const metadata: Metadata = {
     title: 'CapGen',
@@ -41,11 +41,11 @@ export default function RootLayout({
                         enableSystem
                         disableTransitionOnChange
                     >
-                        <TRPCReactProvider>
+                        <ConvexProvider>
                             <Navbar />
                             {children}
                             <Toaster richColors />
-                        </TRPCReactProvider>
+                        </ConvexProvider>
                     </ThemeProvider>
                 </body>
             </html>
@@ -63,10 +63,10 @@ function Navbar() {
                     </Link>
                 </div>
 
-                <SignedIn>
+                <Authenticated>
                     <UserButton />
-                </SignedIn>
-                <SignedOut>
+                </Authenticated>
+                <Unauthenticated>
                     <SignInButton>
                         <Button
                             variant={'ghost'}
@@ -76,7 +76,7 @@ function Navbar() {
                             <User className="text-primary size-4" />
                         </Button>
                     </SignInButton>
-                </SignedOut>
+                </Unauthenticated>
             </div>
         </header>
     )

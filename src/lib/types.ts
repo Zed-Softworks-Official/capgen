@@ -3,7 +3,6 @@ export type CapGenTrascript = Record<string, Line[]>
 export type Captions = {
     speakers: Speaker[]
     transcript: CapGenTrascript
-    duration?: number | null
 }
 
 export type Line = {

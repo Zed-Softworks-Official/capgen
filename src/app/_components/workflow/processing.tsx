@@ -11,57 +11,59 @@ import { Progress } from '~/app/_components/ui/progress'
 
 import { extractAudioFromVideo } from '~/lib/extract'
 import { tryCatch } from '~/lib/try-catch'
-import { api } from '~/trpc/react'
 import { db } from '~/lib/db'
+import { useMutation } from 'convex/react'
+import { api } from '~/convex/_generated/api'
 
 export function Processing() {
     const { progress, currentFile, generateSpeakerLabels } = useStore(workflowStore)
+    const transcribeAudio = useMutation(api.functions.transcript.transcribeAudio)
 
-    const transcribeAudio = api.transcript.transcribeAudio.useMutation({
-        onSuccess: (res, input) => {
-            if (res.error) {
-                toast.error(res.error.message)
-                return
-            }
+    // const transcribeAudio = api.transcript.transcribeAudio.useMutation({
+    //     onSuccess: (res, input) => {
+    //         if (res.error) {
+    //             toast.error(res.error.message)
+    //             return
+    //         }
 
-            updateProgress({
-                value: 100,
-                message: 'Transcription complete',
-            })
+    //         updateProgress({
+    //             value: 100,
+    //             message: 'Transcription complete',
+    //         })
 
-            workflowStore.setState((state) => ({
-                ...state,
-                transcript: res.data.transcript,
-                speakers: res.data.speakers ?? [],
-            }))
+    //         workflowStore.setState((state) => ({
+    //             ...state,
+    //             transcript: res.data.transcript,
+    //             speakers: res.data.speakers ?? [],
+    //         }))
 
-            stateStore.setState((state) => ({
-                ...state,
-                processing: false,
-            }))
+    //         stateStore.setState((state) => ({
+    //             ...state,
+    //             processing: false,
+    //         }))
 
-            audioPreviewStore.setState((state) => ({
-                ...state,
-                isPlaying: false,
-                audioUrl: input.audioURL,
-            }))
+    //         audioPreviewStore.setState((state) => ({
+    //             ...state,
+    //             isPlaying: false,
+    //             audioUrl: input.audioURL,
+    //         }))
 
-            void db.recents.add({
-                captions: res.data,
-                speakerCount: res.data.speakers.length,
-                duration: res.data.duration ?? 0,
-                audioUrl: input.audioURL,
-                file: {
-                    name: currentFile?.data.name ?? 'Unknown',
-                    type: (currentFile?.data.type ?? 'audio') as 'video' | 'audio',
-                },
-                createdAt: Date.now(),
-            })
-        },
-        onError: (e) => {
-            toast.error(e.message)
-        },
-    })
+    //         void db.recents.add({
+    //             captions: res.data,
+    //             speakerCount: res.data.speakers.length,
+    //             duration: res.data.duration ?? 0,
+    //             audioUrl: input.audioURL,
+    //             file: {
+    //                 name: currentFile?.data.name ?? 'Unknown',
+    //                 type: (currentFile?.data.type ?? 'audio') as 'video' | 'audio',
+    //             },
+    //             createdAt: Date.now(),
+    //         })
+    //     },
+    //     onError: (e) => {
+    //         toast.error(e.message)
+    //     },
+    // })
 
     useProcessFile(currentFile?.data, async (file: File) => {
         let extractionResult = null

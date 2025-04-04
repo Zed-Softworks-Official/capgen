@@ -1,8 +1,13 @@
 'use client'
 
 import { useStore } from '@tanstack/react-store'
+
+import { useState } from 'react'
+import { useAction } from 'convex/react'
+
 import { useDropzone } from 'react-dropzone'
 import { Mic, Settings, Upload, Video, Wand2 } from 'lucide-react'
+import { fromPromise } from 'neverthrow'
 import { toast } from 'sonner'
 
 import { stateStore, workflowStore } from '~/lib/store'
@@ -11,9 +16,8 @@ import { cn } from '~/lib/utils'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
 import { Switch } from '../ui/switch'
-import { useState } from 'react'
-import { api } from '~/trpc/react'
-import { Input } from '../ui/input'
+
+import { api } from '~/convex/_generated/api'
 
 export function Dropzone() {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -67,25 +71,10 @@ export function Dropzone() {
 function DropText() {
     const { currentFile } = useStore(workflowStore)
 
+    const [isPending, setIsPending] = useState(false)
     const [separateSpeakers, setSeparateSpeakers] = useState(true)
-    const [wordsPerCaption, setWordsPerCaption] = useState(7)
 
-    const checkUserSubscription = api.user.checkUserSubscription.useMutation({
-        onSuccess: (res) => {
-            if (!res.value) {
-                toast.error(res.message)
-                return
-            }
-
-            stateStore.setState(() => ({
-                uploading: false,
-                processing: true,
-            }))
-        },
-        onError: () => {
-            toast.error('Error verifying subscription')
-        },
-    })
+    const checkUserSubscription = useAction(api.functions.user.checkUserSubscription)
 
     if (currentFile) {
         return (
@@ -151,31 +140,35 @@ function DropText() {
                         />
                     </div>
 
-                    {/* <div className="bg-accent/40 flex items-center justify-between rounded-lg p-4">
-                        <div className="flex items-center gap-3">
-                            
-                            <Label
-                                htmlFor="words-per-caption"
-                                className="text-sm font-medium"
-                            >
-                                Words per caption
-                            </Label>
-                        </div>
-                        <Input
-                            id="words-per-caption"
-                            type="number"
-                            value={wordsPerCaption}
-                            onChange={(e) => setWordsPerCaption(e.target.valueAsNumber)}
-                        />
-                    </div> */}
-
                     <Button
                         className="group relative w-full cursor-pointer overflow-hidden"
-                        disabled={checkUserSubscription.isPending}
+                        disabled={isPending}
                         onClick={(e) => {
                             e.stopPropagation()
+                            setIsPending(true)
 
-                            checkUserSubscription.mutate()
+                            void fromPromise(
+                                checkUserSubscription(),
+                                (e) => e as Error
+                            ).match(
+                                (res) => {
+                                    if (!res.value) {
+                                        toast.error(res.message)
+                                    }
+
+                                    stateStore.setState(() => ({
+                                        uploading: false,
+                                        processing: true,
+                                    }))
+
+                                    setIsPending(false)
+                                },
+                                (e) => {
+                                    toast.error('Error verifying subscription', {
+                                        description: e.message,
+                                    })
+                                }
+                            )
                         }}
                     >
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>

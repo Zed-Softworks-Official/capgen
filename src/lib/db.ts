@@ -12,6 +12,7 @@ type RecentCaptions = {
         type: 'video' | 'audio'
     }
     createdAt: number
+    jobId: string
 }
 
 const db = new Dexie('capgen') as Dexie & {
