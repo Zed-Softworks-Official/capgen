@@ -29,9 +29,8 @@ export const startTranscription = internalAction({
                     url: args.audioUrl,
                 },
                 skip_diarization: !args.speakerLabels,
-                speaker_channels_count: args.speakerCount,
                 notification_config: {
-                    url: 'https://capgen.io/api/transcript',
+                    url: 'https://9fc3-76-167-149-110.ngrok-free.app',
                     auth_headers: {
                         Authorization: `Bearer ${unkeyApiKey}`,
                     },
@@ -40,9 +39,9 @@ export const startTranscription = internalAction({
         )
 
         if (error || !data?.id) {
-            throw new Error('Failed start transcription job')
+            console.error(error)
         }
 
-        return data.id
+        return data?.id
     },
 })

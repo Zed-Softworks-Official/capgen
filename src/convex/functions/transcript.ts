@@ -25,6 +25,10 @@ export const transcribeAudio = action({
             userId: identity.subject,
         })
 
+        if (!jobId) {
+            throw new Error('No Job ID')
+        }
+
         void ctx.runMutation(internal.functions.transcript.setTranscript, {
             jobId,
             filename: args.filename,

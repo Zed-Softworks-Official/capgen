@@ -110,6 +110,16 @@ export function Processing() {
             audioUrl: uploadedData.value.url,
             speakerLabels: generateSpeakerLabels,
             wordsPerCaption: 5,
+        }).then(() => {
+            updateProgress({
+                value: 100,
+                message: 'Transcription complete',
+            })
+
+            stateStore.setState((state) => ({
+                ...state,
+                processing: false,
+            }))
         })
     })
 

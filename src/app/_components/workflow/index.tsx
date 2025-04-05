@@ -29,9 +29,7 @@ export function Workflow() {
                     <div className="space-y-10">
                         <Dropzone />
 
-                        <div className="mx-auto max-w-2xl">
-                            <Recents />
-                        </div>
+                        <div className="mx-auto max-w-2xl">{/* <Recents /> */}</div>
                     </div>
                 </div>
             </main>
@@ -42,5 +40,6 @@ export function Workflow() {
         return <Processing />
     }
 
-    return <CaptionSettings />
+    // return <CaptionSettings />
+    return <>Hello, World!</>
 }
