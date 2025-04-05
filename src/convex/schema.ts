@@ -15,12 +15,14 @@ export default defineSchema({
             ),
             transcript: v.record(
                 v.string(),
-                v.object({
-                    text: v.string(),
-                    start: v.number(),
-                    end: v.number(),
-                    speakderId: v.string(),
-                })
+                v.array(
+                    v.object({
+                        text: v.string(),
+                        start: v.number(),
+                        end: v.number(),
+                        speakderId: v.string(),
+                    })
+                )
             ),
         }),
         speakerCount: v.number(),
@@ -30,6 +32,5 @@ export default defineSchema({
             name: v.string(),
             type: v.union(v.literal('video'), v.literal('audio')),
         }),
-        createdAt: v.number(),
     }),
 })

@@ -1,6 +1,5 @@
 'use client'
 
-import { useLiveQuery } from 'dexie-react-hooks'
 import { formatDistanceToNow, formatDuration } from 'date-fns'
 
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
@@ -16,7 +15,6 @@ import {
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 
-import { db } from '~/lib/db'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,9 +22,12 @@ import {
     DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
 import { audioPreviewStore, stateStore, workflowStore } from '~/lib/store'
+import { useQuery } from 'convex/react'
+import { api } from '~/convex/_generated/api'
+import type { CapGenTrascript } from '~/lib/types'
 
 export function Recents() {
-    const recents = useLiveQuery(() => db.recents.toArray())
+    const recents = useQuery(api.functions.transcript.getRecentTranscripts)
 
     if (!recents || recents.length === 0) {
         return (
@@ -50,7 +51,7 @@ export function Recents() {
                 <div className="divide-border/30 divide-y">
                     {recents.map((transcription) => (
                         <div
-                            key={transcription.id}
+                            key={transcription._id}
                             className="hover:bg-accent/30 flex items-center justify-between p-4 transition-colors duration-200 ease-in-out"
                         >
                             <div className="flex items-center gap-3">
@@ -68,7 +69,7 @@ export function Recents() {
                                     <div className="text-muted-foreground flex items-center gap-2 text-sm">
                                         <span>
                                             {formatDistanceToNow(
-                                                transcription.createdAt,
+                                                transcription._creationTime,
                                                 { addSuffix: true }
                                             )}
                                         </span>
@@ -132,10 +133,9 @@ export function Recents() {
 
                                                 workflowStore.setState((prev) => ({
                                                     ...prev,
-                                                    transcript:
-                                                        transcription.captions.transcript,
-                                                    speakers:
-                                                        transcription.captions.speakers,
+                                                    transcript: transcription.data
+                                                        .transcript as unknown as CapGenTrascript,
+                                                    speakers: transcription.data.speakers,
                                                     audioFile: transcription.audioUrl,
                                                 }))
 

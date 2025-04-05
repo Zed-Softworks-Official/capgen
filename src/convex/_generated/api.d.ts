@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as functions_revai from "../functions/revai.js";
 import type * as functions_transcript from "../functions/transcript.js";
 import type * as functions_user from "../functions/user.js";
 
@@ -25,6 +26,7 @@ import type * as functions_user from "../functions/user.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "functions/revai": typeof functions_revai;
   "functions/transcript": typeof functions_transcript;
   "functions/user": typeof functions_user;
 }>;

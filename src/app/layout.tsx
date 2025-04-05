@@ -4,8 +4,7 @@ import Link from 'next/link'
 import { type Metadata } from 'next'
 import { Geist } from 'next/font/google'
 
-import { ClerkProvider, SignInButton } from '@clerk/nextjs'
-import { Authenticated, Unauthenticated } from 'convex/react'
+import { ClerkProvider, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs'
 
 import { ThemeProvider } from './_components/theme-provider'
 
@@ -63,10 +62,10 @@ function Navbar() {
                     </Link>
                 </div>
 
-                <Authenticated>
+                <SignedIn>
                     <UserButton />
-                </Authenticated>
-                <Unauthenticated>
+                </SignedIn>
+                <SignedOut>
                     <SignInButton>
                         <Button
                             variant={'ghost'}
@@ -76,7 +75,7 @@ function Navbar() {
                             <User className="text-primary size-4" />
                         </Button>
                     </SignInButton>
-                </Unauthenticated>
+                </SignedOut>
             </div>
         </header>
     )

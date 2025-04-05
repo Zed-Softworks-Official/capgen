@@ -1,10 +1,10 @@
 import { v } from 'convex/values'
 
-import { mutation } from '~/convex/_generated/server'
-import { tryCatch } from '~/lib/try-catch'
-import { client } from '~/server/assemblyai'
+import { internalMutation, query } from '../_generated/server'
+import { internal } from '../_generated/api'
+import { action } from '../_generated/server'
 
-export const transcribeAudio = mutation({
+export const transcribeAudio = action({
     args: {
         filename: v.string(),
         audioUrl: v.string(),
@@ -18,35 +18,71 @@ export const transcribeAudio = mutation({
             throw new Error('Unauthorized')
         }
 
-        const { data, error } = await tryCatch(
-            client.transcripts.submit({
-                audio: args.audioUrl,
-                speaker_labels: args.speakerLabels,
-                speakers_expected: args.speakerCount,
-            })
-        )
+        const jobId = await ctx.runAction(internal.functions.revai.startTranscription, {
+            audioUrl: args.audioUrl,
+            speakerCount: args.speakerCount ?? 0,
+            speakerLabels: args.speakerLabels,
+            userId: identity.subject,
+        })
 
-        if (error || !data?.id) {
-            throw new Error('Failed start transcription job')
-        }
+        void ctx.runMutation(internal.functions.transcript.setTranscript, {
+            jobId,
+            filename: args.filename,
+            audioUrl: args.audioUrl,
+            speakerCount: args.speakerCount ?? 0,
+            userId: identity.subject,
+        })
 
+        return { received: true }
+    },
+})
+
+export const setTranscript = internalMutation({
+    args: {
+        jobId: v.string(),
+        filename: v.string(),
+        audioUrl: v.string(),
+        speakerCount: v.number(),
+        userId: v.string(),
+    },
+    handler: async (ctx, args) => {
         await ctx.db.insert('captions', {
-            jobId: data.id,
+            jobId: args.jobId,
             data: {
                 speakers: [],
                 transcript: {},
             },
-            speakerCount: args.speakerCount ?? 0,
+            speakerCount: args.speakerCount,
             duration: 0,
             audioUrl: args.audioUrl,
             file: {
                 name: args.filename,
                 type: 'audio',
             },
-            createdAt: Date.now(),
-            userId: identity.subject,
+            userId: args.userId,
         })
+    },
+})
 
-        return { received: true }
+export const getRecentTranscripts = query({
+    handler: async (ctx) => {
+        const identity = await ctx.auth.getUserIdentity()
+        if (!identity) {
+            throw new Error('Unauthorized')
+        }
+
+        const results = await ctx.db
+            .query('captions')
+            .filter((q) => q.eq(q.field('userId'), identity.subject))
+            .filter((q) => {
+                const now = new Date()
+                const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+                return q.gte(q.field('_creationTime'), firstDayOfMonth.getTime())
+            })
+            .order('desc')
+            .collect()
+
+        return results
     },
 })

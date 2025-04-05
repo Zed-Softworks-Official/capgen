@@ -14,6 +14,7 @@ import { env } from '~/env'
 import { tryCatch } from '~/lib/try-catch'
 import { polar } from '~/server/polar'
 import type { PublicUserMetadata, TrialData } from '~/lib/types'
+import { unkey } from '~/server/unkey'
 
 const allowedEvents = ['user.created'] as WebhookEventType[]
 
@@ -21,15 +22,32 @@ async function processEvent(event: WebhookEvent) {
     if (!allowedEvents.includes(event.type)) return
     if (event.type !== 'user.created') return
 
-    const { id, email_addresses, first_name, last_name } = event.data
+    const { id, email_addresses, first_name, last_name, created_at } = event.data
+
+    const apiKey = await unkey.keys.create({
+        apiId: env.UNKEY_API_ID,
+        externalId: id,
+        name: `${first_name} ${last_name}`,
+        environment: env.NODE_ENV,
+        refill: {
+            amount: 3600,
+            interval: 'monthly',
+            refillDay: new Date(created_at).getDay(),
+        },
+        remaining: 3600,
+    })
+
+    if (apiKey.error) {
+        console.error('[CLERK_WEBHOOK] Error creating Unkey API Key', apiKey.error)
+
+        return
+    }
 
     const clerk = await clerkClient()
     await clerk.users.updateUserMetadata(id, {
-        publicMetadata: {
-            timeUsed: 0,
-            timeLimit: 10 * 3600,
-            recentFiles: [],
-        } satisfies PublicUserMetadata,
+        privateMetadata: {
+            unkeyApiKey: apiKey.result.key,
+        },
     })
 
     await polar.customers.create({

@@ -13,9 +13,11 @@ export const env = createEnv({
         CLERK_WEBHOOK_SECRET: z.string(),
         CLERK_DOMAIN: z.string(),
 
+        UNKEY_ROOT_KEY: z.string(),
+        UNKEY_API_ID: z.string(),
+
         UPLOADTHING_TOKEN: z.string(),
 
-        ASSEMBLYAI_API_KEY: z.string(),
         REV_AI_API_KEY: z.string(),
 
         POLAR_ACESS_TOKEN: z.string(),
@@ -50,9 +52,11 @@ export const env = createEnv({
         CLERK_DOMAIN: process.env.CLERK_DOMAIN,
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
 
+        UNKEY_ROOT_KEY: process.env.UNKEY_ROOT_KEY,
+        UNKEY_API_ID: process.env.UNKEY_API_ID,
+
         UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
 
-        ASSEMBLYAI_API_KEY: process.env.ASSEMBLYAI_API_KEY,
         REV_AI_API_KEY: process.env.REV_AI_API_KEY,
 
         POLAR_ACESS_TOKEN: process.env.POLAR_ACCESS_TOKEN,

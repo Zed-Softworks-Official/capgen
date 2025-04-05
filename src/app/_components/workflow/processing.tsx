@@ -11,13 +11,13 @@ import { Progress } from '~/app/_components/ui/progress'
 
 import { extractAudioFromVideo } from '~/lib/extract'
 import { tryCatch } from '~/lib/try-catch'
-import { db } from '~/lib/db'
-import { useMutation } from 'convex/react'
+import { useAction } from 'convex/react'
 import { api } from '~/convex/_generated/api'
 
 export function Processing() {
     const { progress, currentFile, generateSpeakerLabels } = useStore(workflowStore)
-    const transcribeAudio = useMutation(api.functions.transcript.transcribeAudio)
+
+    const transcribeAudio = useAction(api.functions.transcript.transcribeAudio)
 
     // const transcribeAudio = api.transcript.transcribeAudio.useMutation({
     //     onSuccess: (res, input) => {
@@ -105,9 +105,9 @@ export function Processing() {
             message: 'Analyzing audio...',
         })
 
-        transcribeAudio.mutate({
+        void transcribeAudio({
             filename: currentFile?.data.name ?? 'Unknown',
-            audioURL: uploadedData.value.url,
+            audioUrl: uploadedData.value.url,
             speakerLabels: generateSpeakerLabels,
             wordsPerCaption: 5,
         })
