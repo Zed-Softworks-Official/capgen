@@ -109,8 +109,7 @@ export function Processing() {
             filename: currentFile?.data.name ?? 'Unknown',
             audioUrl: uploadedData.value.url,
             speakerLabels: generateSpeakerLabels,
-            wordsPerCaption: 5,
-        }).then(() => {
+        }).then((res) => {
             updateProgress({
                 value: 100,
                 message: 'Transcription complete',
@@ -120,6 +119,8 @@ export function Processing() {
                 ...state,
                 processing: false,
             }))
+
+            console.log(res)
         })
     })
 

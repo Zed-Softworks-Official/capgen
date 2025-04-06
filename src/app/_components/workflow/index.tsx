@@ -8,9 +8,16 @@ import { CaptionSettings } from './caption-settings'
 
 import { stateStore } from '~/lib/store'
 import { Recents } from './recents'
+import { useConvexAuth } from 'convex/react'
 
 export function Workflow() {
     const { uploading, processing } = useStore(stateStore)
+
+    const { isAuthenticated } = useConvexAuth()
+
+    if (!isAuthenticated) {
+        return <>Loading...</>
+    }
 
     if (uploading) {
         return (
@@ -29,7 +36,9 @@ export function Workflow() {
                     <div className="space-y-10">
                         <Dropzone />
 
-                        <div className="mx-auto max-w-2xl">{/* <Recents /> */}</div>
+                        <div className="mx-auto max-w-2xl">
+                            <Recents />
+                        </div>
                     </div>
                 </div>
             </main>

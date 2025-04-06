@@ -3,6 +3,7 @@ import { v } from 'convex/values'
 import { internalMutation, query } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { action } from '../_generated/server'
+import type { Line, Speaker } from '~/lib/types'
 
 export const transcribeAudio = action({
     args: {
@@ -10,7 +11,6 @@ export const transcribeAudio = action({
         audioUrl: v.string(),
         speakerLabels: v.boolean(),
         speakerCount: v.optional(v.number()),
-        wordsPerCaption: v.optional(v.number()),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity()
@@ -18,23 +18,73 @@ export const transcribeAudio = action({
             throw new Error('Unauthorized')
         }
 
-        const jobId = await ctx.runAction(internal.functions.revai.startTranscription, {
+        const data = await ctx.runAction(internal.functions.jobs.startTranscription, {
             audioUrl: args.audioUrl,
             speakerCount: args.speakerCount ?? 0,
             speakerLabels: args.speakerLabels,
             userId: identity.subject,
         })
 
-        if (!jobId) {
-            throw new Error('No Job ID')
+        if (!data) {
+            throw new Error('Failed to start transcription')
         }
 
-        void ctx.runMutation(internal.functions.transcript.setTranscript, {
-            jobId,
+        const speakers = data.results.utterances?.reduce((acc, utterance) => {
+            if (!acc.find((s) => s.id === utterance.speaker?.toString())) {
+                acc.push({
+                    id: utterance.speaker?.toString() ?? '',
+                    name: utterance.speaker?.toString() ?? '',
+                    color: `#${Math.floor(Math.random() * 16777215)
+                        .toString(16)
+                        .padStart(6, '0')}`,
+                })
+            }
+            return acc
+        }, [] as Speaker[])
+
+        const transcript = data.results.channels.reduce(
+            (acc, channel) => {
+                return channel.alternatives.reduce((innerAcc, alternative) => {
+                    if (!alternative.paragraphs?.paragraphs) return innerAcc
+
+                    return alternative.paragraphs.paragraphs.reduce(
+                        (paragraphAcc, paragraph) => {
+                            if (!paragraph.sentences) return paragraphAcc
+
+                            const speakerId = paragraph.speaker?.toString() ?? '0'
+
+                            // Initialize the speaker's array if it doesn't exist
+                            if (!paragraphAcc[speakerId]) {
+                                paragraphAcc[speakerId] = []
+                            }
+
+                            // Add each sentence to the speaker's array
+                            paragraph.sentences.forEach((sentence) => {
+                                paragraphAcc[speakerId]?.push({
+                                    text: sentence.text,
+                                    start: sentence.start,
+                                    end: sentence.end,
+                                    speakerId: speakerId,
+                                })
+                            })
+
+                            return paragraphAcc
+                        },
+                        innerAcc
+                    )
+                }, acc)
+            },
+            {} as Record<string, Line[]>
+        )
+
+        await ctx.runMutation(internal.functions.transcript.setTranscript, {
             filename: args.filename,
             audioUrl: args.audioUrl,
-            speakerCount: args.speakerCount ?? 0,
+            speakerCount: data.metadata.channels,
             userId: identity.subject,
+            duration: data.metadata.duration,
+            speakers: speakers ?? [],
+            transcript: transcript,
         })
 
         return { received: true }
@@ -43,21 +93,38 @@ export const transcribeAudio = action({
 
 export const setTranscript = internalMutation({
     args: {
-        jobId: v.string(),
         filename: v.string(),
         audioUrl: v.string(),
         speakerCount: v.number(),
         userId: v.string(),
+        duration: v.number(),
+        speakers: v.array(
+            v.object({
+                id: v.string(),
+                name: v.string(),
+                color: v.string(),
+            })
+        ),
+        transcript: v.record(
+            v.string(),
+            v.array(
+                v.object({
+                    text: v.string(),
+                    start: v.number(),
+                    end: v.number(),
+                    speakerId: v.string(),
+                })
+            )
+        ),
     },
     handler: async (ctx, args) => {
         await ctx.db.insert('captions', {
-            jobId: args.jobId,
             data: {
-                speakers: [],
-                transcript: {},
+                speakers: args.speakers,
+                transcript: args.transcript,
             },
             speakerCount: args.speakerCount,
-            duration: 0,
+            duration: args.duration,
             audioUrl: args.audioUrl,
             file: {
                 name: args.filename,

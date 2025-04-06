@@ -4,7 +4,6 @@ import { v } from 'convex/values'
 export default defineSchema({
     captions: defineTable({
         userId: v.string(),
-        jobId: v.string(),
         data: v.object({
             speakers: v.array(
                 v.object({
@@ -20,7 +19,7 @@ export default defineSchema({
                         text: v.string(),
                         start: v.number(),
                         end: v.number(),
-                        speakderId: v.string(),
+                        speakerId: v.string(),
                     })
                 )
             ),

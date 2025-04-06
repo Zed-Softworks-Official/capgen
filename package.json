@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.12.9",
+    "@deepgram/sdk": "^3.11.3",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
     "@polar-sh/nextjs": "^0.3.23",
