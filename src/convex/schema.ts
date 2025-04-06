@@ -3,6 +3,7 @@ import { v } from 'convex/values'
 
 export default defineSchema({
     captions: defineTable({
+        requestId: v.string(),
         userId: v.string(),
         data: v.object({
             speakers: v.array(

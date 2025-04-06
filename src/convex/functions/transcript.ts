@@ -29,19 +29,6 @@ export const transcribeAudio = action({
             throw new Error('Failed to start transcription')
         }
 
-        const speakers = data.results.utterances?.reduce((acc, utterance) => {
-            if (!acc.find((s) => s.id === utterance.speaker?.toString())) {
-                acc.push({
-                    id: utterance.speaker?.toString() ?? '',
-                    name: utterance.speaker?.toString() ?? '',
-                    color: `#${Math.floor(Math.random() * 16777215)
-                        .toString(16)
-                        .padStart(6, '0')}`,
-                })
-            }
-            return acc
-        }, [] as Speaker[])
-
         const transcript = data.results.channels.reduce(
             (acc, channel) => {
                 return channel.alternatives.reduce((innerAcc, alternative) => {
@@ -77,17 +64,28 @@ export const transcribeAudio = action({
             {} as Record<string, Line[]>
         )
 
+        const speakers = Object.keys(transcript).map((speakerId) => ({
+            id: speakerId,
+            name: speakerId,
+            color: `#${Math.floor(Math.random() * 16777215)
+                .toString(16)
+                .padStart(6, '0')}`,
+        }))
+
         await ctx.runMutation(internal.functions.transcript.setTranscript, {
             filename: args.filename,
             audioUrl: args.audioUrl,
             speakerCount: data.metadata.channels,
             userId: identity.subject,
             duration: data.metadata.duration,
-            speakers: speakers ?? [],
+            speakers: speakers,
             transcript: transcript,
+            requestId: data.metadata.request_id,
         })
 
-        return { received: true }
+        const requestId = data.metadata.request_id as string
+
+        return { received: true, requestId }
     },
 })
 
@@ -116,6 +114,7 @@ export const setTranscript = internalMutation({
                 })
             )
         ),
+        requestId: v.string(),
     },
     handler: async (ctx, args) => {
         await ctx.db.insert('captions', {
@@ -131,6 +130,7 @@ export const setTranscript = internalMutation({
                 type: 'audio',
             },
             userId: args.userId,
+            requestId: args.requestId,
         })
     },
 })
@@ -155,5 +155,22 @@ export const getRecentTranscripts = query({
             .collect()
 
         return results
+    },
+})
+
+export const getTranscriptByRequestId = query({
+    args: {
+        requestId: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity()
+        if (!identity) {
+            throw new Error('Unauthorized')
+        }
+
+        return await ctx.db
+            .query('captions')
+            .filter((q) => q.eq(q.field('requestId'), args.requestId))
+            .first()
     },
 })

@@ -5,6 +5,10 @@
 import type { NextConfig } from 'next'
 import './src/env'
 
-const config = {} satisfies NextConfig
+const config = {
+    experimental: {
+        useCache: true,
+    },
+} satisfies NextConfig
 
 export default config

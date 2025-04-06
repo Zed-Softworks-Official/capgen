@@ -1,8 +1,9 @@
 'use client'
 
-import { formatDistanceToNow, formatDuration } from 'date-fns'
+import Link from 'next/link'
+import { formatDuration, formatDistanceToNow } from 'date-fns'
+import { useQuery } from 'convex/react'
 
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import {
     CheckCircle2,
     Clock,
@@ -12,19 +13,19 @@ import {
     FileVideo,
     MoreVertical,
 } from 'lucide-react'
-import { Button } from '../ui/button'
-import { Badge } from '../ui/badge'
 
+import { Card, CardContent, CardHeader, CardTitle } from '../_components/ui/card'
+
+import { Badge } from '../_components/ui/badge'
+import { Button } from '../_components/ui/button'
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '../ui/dropdown-menu'
-import { audioPreviewStore, stateStore, workflowStore } from '~/lib/store'
-import { useQuery } from 'convex/react'
+} from '../_components/ui/dropdown-menu'
+
 import { api } from '~/convex/_generated/api'
-import type { CapGenTranscript } from '~/lib/types'
 
 export function Recents() {
     const recents = useQuery(api.functions.transcript.getRecentTranscripts)
@@ -124,30 +125,13 @@ export function Recents() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                        <DropdownMenuItem
-                                            onClick={() => {
-                                                stateStore.setState(() => ({
-                                                    processing: false,
-                                                    uploading: false,
-                                                }))
-
-                                                workflowStore.setState((prev) => ({
-                                                    ...prev,
-                                                    transcript: transcription.data
-                                                        .transcript as unknown as CapGenTranscript,
-                                                    speakers: transcription.data.speakers,
-                                                    audioFile: transcription.audioUrl,
-                                                }))
-
-                                                audioPreviewStore.setState((state) => ({
-                                                    ...state,
-                                                    audioUrl: transcription.audioUrl,
-                                                    isPlaying: false,
-                                                }))
-                                            }}
-                                        >
-                                            <Eye className="mr-2 size-4" />
-                                            View
+                                        <DropdownMenuItem asChild>
+                                            <Link
+                                                href={`/transcript/${transcription.requestId}`}
+                                            >
+                                                <Eye className="mr-2 size-4" />
+                                                View
+                                            </Link>
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>

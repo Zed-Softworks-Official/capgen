@@ -28,7 +28,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '../_components/ui/avatar'
 import { Badge } from '../_components/ui/badge'
 import { env } from '~/env'
 import { tryCatch } from '~/lib/try-catch'
-import type { PublicUserMetadata } from '~/lib/types'
 import { Progress } from '../_components/ui/progress'
 
 export default async function ProfilePage() {

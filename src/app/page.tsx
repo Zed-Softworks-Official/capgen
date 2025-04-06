@@ -22,12 +22,14 @@ import {
     CardHeader,
     CardTitle,
 } from './_components/ui/card'
+import { redirect } from 'next/navigation'
+import { polar } from '~/server/polar'
 
 export default async function Home() {
     const user = await currentUser()
 
     if (user) {
-        return <Workflow />
+        return redirect('/home')
     }
 
     return <LandingPage />

@@ -1,23 +1,19 @@
 'use client'
 
 import { useStore } from '@tanstack/react-store'
+import { useForm } from '@tanstack/react-form'
 
-import { useState } from 'react'
-import { useAction } from 'convex/react'
-
-import { useDropzone } from 'react-dropzone'
 import { Mic, Settings, Upload, Video, Wand2 } from 'lucide-react'
-import { fromPromise } from 'neverthrow'
+import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
 
-import { stateStore, workflowStore } from '~/lib/store'
-import { Card, CardContent } from '../ui/card'
+import { workflowStore } from '~/lib/store'
 import { cn } from '~/lib/utils'
-import { Button } from '../ui/button'
-import { Label } from '../ui/label'
-import { Switch } from '../ui/switch'
 
-import { api } from '~/convex/_generated/api'
+import { Card, CardContent } from '~/app/_components/ui/card'
+import { Button } from '~/app/_components/ui/button'
+import { Label } from '~/app/_components/ui/label'
+import { Switch } from '~/app/_components/ui/switch'
 
 export function Dropzone() {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -60,7 +56,7 @@ export function Dropzone() {
                         )}
                     >
                         <input {...getInputProps()} />
-                        <DropText />
+                        <DropForm />
                     </div>
                 </CardContent>
             </Card>
@@ -68,21 +64,31 @@ export function Dropzone() {
     )
 }
 
-function DropText() {
-    const { currentFile } = useStore(workflowStore)
+function DropForm() {
+    const { file } = useStore(workflowStore)
 
-    const [isPending, setIsPending] = useState(false)
-    const [separateSpeakers, setSeparateSpeakers] = useState(true)
+    const form = useForm({
+        defaultValues: {
+            separateSpeakers: true,
+        },
+        onSubmit: (data) => {
+            workflowStore.setState((state) => ({
+                ...state,
+                currentState: 'processing',
+                options: {
+                    separateSpeakers: data.value.separateSpeakers,
+                },
+            }))
+        },
+    })
 
-    const checkUserSubscription = useAction(api.functions.user.checkUserSubscription)
-
-    if (currentFile) {
+    if (file) {
         return (
             <div className="w-full">
                 <div className="bg-accent/40 mb-6 flex items-center rounded-lg p-4">
                     <div className="from-purple/20 to-violet/20 mr-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br p-1">
                         <div className="bg-background flex h-full w-full items-center justify-center rounded-full">
-                            {currentFile?.type.startsWith('video/') ? (
+                            {file?.uploadedType.startsWith('video/') ? (
                                 <Video className="text-primary h-5 w-5" />
                             ) : (
                                 <Mic className="text-primary h-5 w-5" />
@@ -90,9 +96,9 @@ function DropText() {
                         </div>
                     </div>
                     <div className="flex-1 overflow-hidden">
-                        <p className="truncate font-medium">{currentFile.data.name}</p>
+                        <p className="truncate font-medium">{file.uploadedData.name}</p>
                         <p className="text-muted-foreground text-sm">
-                            {(currentFile.data.size / (1024 * 1024)).toFixed(2)} MB
+                            {(file.uploadedData.size / (1024 * 1024)).toFixed(2)} MB
                         </p>
                     </div>
                     <Button
@@ -103,7 +109,7 @@ function DropText() {
 
                             workflowStore.setState((state) => ({
                                 ...state,
-                                currentFile: null,
+                                file: null,
                             }))
                         }}
                         className="text-destructive hover:text-destructive/90"
@@ -112,71 +118,54 @@ function DropText() {
                     </Button>
                 </div>
 
-                <div className="mt-6 space-y-6">
-                    <div className="bg-accent/40 flex items-center justify-between rounded-lg p-4">
-                        <div className="flex items-center gap-3">
-                            <Settings className="text-primary h-5 w-5" />
-                            <Label
-                                htmlFor="separate-speakers"
-                                className="text-sm font-medium"
-                            >
-                                Separate speakers
-                            </Label>
-                        </div>
-                        <Switch
-                            id="separate-speakers"
-                            checked={separateSpeakers}
-                            onCheckedChange={(checked) => {
-                                setSeparateSpeakers(checked)
+                <form className="mt-6 space-y-6">
+                    <form.Field name="separateSpeakers">
+                        {(field) => (
+                            <div className="bg-accent/40 flex items-center justify-between rounded-lg p-4">
+                                <div className="flex items-center gap-3">
+                                    <Settings className="text-primary size-5" />
+                                    <Label
+                                        htmlFor={field.name}
+                                        className="text-sm font-medium"
+                                    >
+                                        Separate speakers
+                                    </Label>
+                                </div>
+                                <Switch
+                                    id={field.name}
+                                    checked={field.state.value}
+                                    onCheckedChange={field.handleChange}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </form.Field>
 
-                                workflowStore.setState((state) => ({
-                                    ...state,
-                                    generateSpeakerLabels: checked,
-                                }))
-                            }}
-                            onClick={(e) => {
-                                e.stopPropagation()
-                            }}
-                        />
-                    </div>
-
-                    <Button
-                        className="group relative w-full cursor-pointer overflow-hidden"
-                        disabled={isPending}
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            setIsPending(true)
-
-                            void fromPromise(
-                                checkUserSubscription(),
-                                (e) => e as Error
-                            ).match(
-                                (res) => {
-                                    if (!res.value) {
-                                        toast.error(res.message)
-                                    }
-
-                                    stateStore.setState(() => ({
-                                        uploading: false,
-                                        processing: true,
-                                    }))
-
-                                    setIsPending(false)
-                                },
-                                (e) => {
-                                    toast.error('Error verifying subscription', {
-                                        description: e.message,
-                                    })
-                                }
-                            )
-                        }}
+                    <form.Subscribe
+                        selector={(state) => [state.canSubmit, state.isSubmitting]}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
-                        <span className="relative flex items-center">
-                            <Wand2 className="mr-2 h-4 w-4" /> Generate Captions
-                        </span>
-                    </Button>
-                </div>
+                        {([canSubmit, isSubmitting]) => (
+                            <Button
+                                type="submit"
+                                className="group relative w-full cursor-pointer overflow-hidden"
+                                disabled={!canSubmit || isSubmitting}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    e.preventDefault()
+
+                                    form.handleSubmit()
+                                }}
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
+                                <span className="relative flex items-center">
+                                    <Wand2 className="mr-2 size-4" /> Generate Captions
+                                </span>
+                            </Button>
+                        )}
+                    </form.Subscribe>
+                </form>
             </div>
         )
     }
@@ -201,9 +190,9 @@ function DropText() {
 function updateCurrentFile(opts: { file: File; type: 'video' | 'audio' }) {
     workflowStore.setState((state) => ({
         ...state,
-        currentFile: {
-            data: opts.file,
-            type: opts.type,
+        file: {
+            uploadedData: opts.file,
+            uploadedType: opts.type,
         },
     }))
 }

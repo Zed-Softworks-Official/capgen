@@ -13,8 +13,9 @@ import { waitUntil } from '@vercel/functions'
 import { env } from '~/env'
 import { tryCatch } from '~/lib/try-catch'
 import { polar } from '~/server/polar'
-import type { PublicUserMetadata, TrialData } from '~/lib/types'
 import { unkey } from '~/server/unkey'
+import { redis } from '~/server/redis'
+import type { TrialData } from '~/lib/types'
 
 const allowedEvents = ['user.created'] as WebhookEventType[]
 
@@ -24,17 +25,18 @@ async function processEvent(event: WebhookEvent) {
 
     const { id, email_addresses, first_name, last_name, created_at } = event.data
 
+    // Create API KEY
     const apiKey = await unkey.keys.create({
         apiId: env.UNKEY_API_ID,
         externalId: id,
         name: `${first_name} ${last_name}`,
         environment: env.NODE_ENV,
         refill: {
-            amount: 3600,
+            amount: 1 * 3600,
             interval: 'monthly',
             refillDay: new Date(created_at).getDay(),
         },
-        remaining: 3600,
+        remaining: 1 * 3600,
     })
 
     if (apiKey.error) {
@@ -43,22 +45,28 @@ async function processEvent(event: WebhookEvent) {
         return
     }
 
+    // Store the API Key somewhere
     const clerk = await clerkClient()
     await clerk.users.updateUserMetadata(id, {
+        publicMetadata: {},
         privateMetadata: {
+            keyId: apiKey.result.keyId,
             unkeyApiKey: apiKey.result.key,
         },
     })
 
+    // Create a customer in Polar
     await polar.customers.create({
         name: `${first_name} ${last_name}`,
         email: email_addresses[0]?.email_address ?? '',
         externalId: id,
-        metadata: {
-            currentlyInTrial: true,
-            trialStartedAt: Math.floor(Date.now() / 1000),
-            trialEndsAt: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
-        } as TrialData,
+    })
+
+    // Create a trial in Redis
+    await redis.set<TrialData>(`subscription:${id}`, {
+        currentlyInTrial: true,
+        trialEndsAt: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+        trialStartedAt: Math.floor(Date.now() / 1000),
     })
 }
 

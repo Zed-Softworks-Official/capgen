@@ -1,34 +1,29 @@
 import { Store } from '@tanstack/react-store'
 
-import type { WorkflowState } from './types'
+type WorkflowStoreType = {
+    currentState: 'choose-file' | 'processing' | 'finished'
+    progress: {
+        value: number
+        message: string
+    }
+    file: {
+        uploadedData: File
+        uploadedType: 'video' | 'audio'
+        audioUrl?: string
+    } | null
+    options: {
+        separateSpeakers: boolean
+    } | null
+    requestId: string | null
+}
 
-export const workflowStore = new Store<WorkflowState>({
-    currentFile: null,
-    audioFile: null,
+export const workflowStore = new Store<WorkflowStoreType>({
+    currentState: 'choose-file',
     progress: {
         value: 0,
-        message: 'Splitting Audio...',
+        message: 'Choosing a file',
     },
-    transcript: null,
-    speakers: [],
-    generateSpeakerLabels: true,
-    wordsPerCaption: 7,
+    file: null,
+    options: null,
+    requestId: null,
 })
-
-export const stateStore = new Store({
-    uploading: true,
-    processing: false,
-})
-
-export const audioPreviewStore = new Store({
-    audioUrl: null as string | null,
-    isPlaying: false,
-    currentSample: null,
-})
-
-export function updateProgress(opts: { value: number; message: string }) {
-    workflowStore.setState((state) => ({
-        ...state,
-        progress: opts,
-    }))
-}
