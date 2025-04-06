@@ -2,23 +2,24 @@
 
 import { type NodeList, stringifySync } from 'subtitle'
 import { useCallback, useState } from 'react'
-import { useStore } from '@tanstack/react-store'
 import { Download } from 'lucide-react'
 
 import JSZip from 'jszip'
 
-import { workflowStore } from '~/lib/store'
-import { Button } from '../ui/button'
+import { Button } from '~/app/_components/ui/button'
+import type { CapGenTranscript } from '~/lib/types'
 
-export function DownloadButton(props: { selectedSpeakers: string[] }) {
+export function DownloadButton(props: {
+    selectedSpeakers: string[]
+    transcript: CapGenTranscript
+}) {
     const [pending, setPending] = useState(false)
-    const { transcript } = useStore(workflowStore)
 
     // TODO: add the ability to have a max word count per caption
     const splitTranscript = useCallback(() => {
-        if (!transcript) return
+        if (!props.transcript) return
 
-        const nodes: Record<string, NodeList> = Object.entries(transcript)
+        const nodes: Record<string, NodeList> = Object.entries(props.transcript)
             .filter(([speaker]) => props.selectedSpeakers.includes(speaker))
             .reduce(
                 (acc, [speaker, lines]) => {
@@ -37,7 +38,7 @@ export function DownloadButton(props: { selectedSpeakers: string[] }) {
             )
 
         return nodes
-    }, [transcript, props.selectedSpeakers])
+    }, [props.transcript, props.selectedSpeakers])
 
     const handleDownload = useCallback(
         (nodes: Record<string, NodeList>) => {

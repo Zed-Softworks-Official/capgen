@@ -2,7 +2,6 @@
 
 import { v } from 'convex/values'
 import { clerkClient } from '@clerk/nextjs/server'
-import { CallbackUrl } from '@deepgram/sdk'
 
 import { internalAction } from '../_generated/server'
 import { tryCatch } from '~/lib/try-catch'
@@ -32,7 +31,7 @@ export const startTranscription = internalAction({
                     url: args.audioUrl,
                 },
                 {
-                    model: 'nova-2',
+                    model: 'nova-3',
                     smart_format: true,
                     language: 'en',
                     diarize: args.speakerLabels,

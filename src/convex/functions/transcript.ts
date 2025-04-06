@@ -3,11 +3,12 @@ import { v } from 'convex/values'
 import { internalMutation, query } from '../_generated/server'
 import { internal } from '../_generated/api'
 import { action } from '../_generated/server'
-import type { Line, Speaker } from '~/lib/types'
+import type { Line } from '~/lib/types'
 
 export const transcribeAudio = action({
     args: {
         filename: v.string(),
+        filetype: v.union(v.literal('audio'), v.literal('video')),
         audioUrl: v.string(),
         speakerLabels: v.boolean(),
         speakerCount: v.optional(v.number()),
@@ -74,6 +75,7 @@ export const transcribeAudio = action({
 
         await ctx.runMutation(internal.functions.transcript.setTranscript, {
             filename: args.filename,
+            filetype: args.filetype,
             audioUrl: args.audioUrl,
             speakerCount: data.metadata.channels,
             userId: identity.subject,
@@ -92,6 +94,7 @@ export const transcribeAudio = action({
 export const setTranscript = internalMutation({
     args: {
         filename: v.string(),
+        filetype: v.union(v.literal('audio'), v.literal('video')),
         audioUrl: v.string(),
         speakerCount: v.number(),
         userId: v.string(),
@@ -127,7 +130,7 @@ export const setTranscript = internalMutation({
             audioUrl: args.audioUrl,
             file: {
                 name: args.filename,
-                type: 'audio',
+                type: args.filetype,
             },
             userId: args.userId,
             requestId: args.requestId,

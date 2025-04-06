@@ -80,7 +80,8 @@ async function processFile(file: File, transcribeAudio: TranscribeActionType) {
 
     const transcript = await transcribeAudio({
         audioUrl: uploadedData.value.url,
-        filename: uploadedData.value.filename,
+        filename: file.name,
+        filetype: file.type.includes('video') ? 'video' : 'audio',
         speakerLabels: workflowStore.state.options?.separateSpeakers ?? true,
     })
 

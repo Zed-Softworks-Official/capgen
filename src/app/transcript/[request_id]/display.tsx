@@ -1,14 +1,25 @@
 'use client'
 
 import { usePreloadedQuery, type Preloaded } from 'convex/react'
-import { Users } from 'lucide-react'
+import { Pause, Play, Users } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
+
 import { Button } from '~/app/_components/ui/button'
 import { Card, CardContent } from '~/app/_components/ui/card'
 import { Checkbox } from '~/app/_components/ui/checkbox'
 import { Label } from '~/app/_components/ui/label'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '~/app/_components/ui/tooltip'
 import type { api } from '~/convex/_generated/api'
-import type { CapGenTranscript } from '~/lib/types'
+
+import type { CapGenTranscript, Speaker } from '~/lib/types'
+import { cn } from '~/lib/utils'
+import { DownloadButton } from './download'
+import { notFound } from 'next/navigation'
 
 export function TranscriptDisplay(props: {
     preloadedQuery: Preloaded<typeof api.functions.transcript.getTranscriptByRequestId>
@@ -33,9 +44,13 @@ export function TranscriptDisplay(props: {
         )
     }
 
+    if (!transcript) {
+        return notFound()
+    }
+
     return (
         <>
-            {/* {audioUrl && <audio ref={audioRef} src={audioUrl} />} */}
+            {transcript?.audioUrl && <audio ref={audioRef} src={transcript.audioUrl} />}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div className="md:col-span-2">
                     <Card className="border-primary/20 overflow-hidden shadow-lg">
@@ -89,10 +104,12 @@ export function TranscriptDisplay(props: {
                                         >
                                             Speaker {speaker.name}
                                         </Label>
-                                        {/* <SpeakerPreview
+                                        <SpeakerPreview
                                             speaker={speaker}
                                             audioRef={audioRef}
-                                        /> */}
+                                            audioUrl={transcript?.audioUrl}
+                                            transcript={transcript?.data.transcript}
+                                        />
                                     </div>
                                 ))}
                             </div>
@@ -146,11 +163,77 @@ export function TranscriptDisplay(props: {
                                 )}
                             </div>
 
-                            {/* <DownloadButton selectedSpeakers={selectedSpeakers} /> */}
+                            <DownloadButton
+                                selectedSpeakers={selectedSpeakers}
+                                transcript={transcript.data.transcript}
+                            />
                         </CardContent>
                     </Card>
                 </div>
             </div>
         </>
+    )
+}
+
+function SpeakerPreview(props: {
+    audioUrl: string | undefined
+    audioRef: React.RefObject<HTMLAudioElement | null>
+    speaker: Speaker
+    transcript: CapGenTranscript
+}) {
+    const [isPlaying, setIsPlaying] = useState(false)
+
+    const togglePlayback = async () => {
+        if (!props.audioRef.current || !props.audioUrl) return
+        const sample = props.transcript?.[props.speaker.id]?.[0]
+
+        if (isPlaying) {
+            props.audioRef.current.pause()
+            setIsPlaying(false)
+        } else {
+            props.audioRef.current.pause()
+            props.audioRef.current.currentTime = (sample?.start ?? 0) / 1000
+            const duration = (sample?.end ?? 0) - (sample?.start ?? 0)
+
+            await props.audioRef.current.play()
+
+            setTimeout(() => {
+                props.audioRef.current?.pause()
+                setIsPlaying(false)
+            }, duration)
+        }
+
+        setIsPlaying(!isPlaying)
+    }
+
+    return (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant={'ghost'}
+                        size={'icon'}
+                        className={cn(
+                            'relative size-9 rounded-full',
+                            isPlaying && 'bg-primary/20'
+                        )}
+                        onClick={togglePlayback}
+                        disabled={!props.audioUrl}
+                    >
+                        {isPlaying && (
+                            <span className="bg-primary/10 absolute inset-0 animate-ping rounded-full opacity-75"></span>
+                        )}
+                        {isPlaying ? (
+                            <Pause className="size-4" />
+                        ) : (
+                            <Play className="size-4" />
+                        )}
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Play Sample</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
     )
 }
