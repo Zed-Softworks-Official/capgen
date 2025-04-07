@@ -27,7 +27,7 @@ export const env = createEnv({
 
         DEEPGRAM_API_KEY: z.string(),
 
-        CONVEX_DEPLOYMENT: z.string(),
+        CONVEX_DEPLOYMENT: z.string().optional(),
     },
 
     /**
