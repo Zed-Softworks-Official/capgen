@@ -11,7 +11,7 @@ import { TranscriptDisplay } from './display'
 export default async function TranscriptPage({
     params,
 }: {
-    params: { request_id: string }
+    params: Promise<{ request_id: string }>
 }) {
     const { request_id } = await params
     const token = await getAuthToken()

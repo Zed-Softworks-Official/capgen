@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { currentUser } from '@clerk/nextjs/server'
 
-import { Workflow } from './_components/workflow'
 import { Button } from './_components/ui/button'
 import {
     Check,
@@ -23,7 +22,6 @@ import {
     CardTitle,
 } from './_components/ui/card'
 import { redirect } from 'next/navigation'
-import { polar } from '~/server/polar'
 
 export default async function Home() {
     const user = await currentUser()

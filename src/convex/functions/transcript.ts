@@ -85,6 +85,7 @@ export const transcribeAudio = action({
             requestId: data.metadata.request_id,
         })
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         const requestId = data.metadata.request_id as string
 
         return { received: true, requestId }

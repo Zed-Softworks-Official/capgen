@@ -155,7 +155,7 @@ function DropForm() {
                                     e.stopPropagation()
                                     e.preventDefault()
 
-                                    form.handleSubmit()
+                                    void form.handleSubmit()
                                 }}
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>

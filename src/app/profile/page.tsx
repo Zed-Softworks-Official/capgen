@@ -29,6 +29,10 @@ import { Badge } from '../_components/ui/badge'
 import { env } from '~/env'
 import { tryCatch } from '~/lib/try-catch'
 import { Progress } from '../_components/ui/progress'
+import { unkey } from '~/server/unkey'
+import { getAuthToken } from '~/lib/auth'
+import { fetchQuery } from 'convex/nextjs'
+import { api } from '~/convex/_generated/api'
 
 export default async function ProfilePage() {
     const user = await currentUser()
@@ -158,7 +162,21 @@ function ProfileCard(props: { user: User }) {
 }
 
 async function SubscriptionCard(props: { user: User }) {
-    const metadata = props.user.publicMetadata as PublicUserMetadata
+    const token = await getAuthToken()
+    const recents = await fetchQuery(
+        api.functions.transcript.getRecentTranscripts,
+        {},
+        { token }
+    )
+
+    const unkeyApiKey = await unkey.keys.get({
+        keyId: props.user.privateMetadata.keyId as string,
+    })
+
+    if (unkeyApiKey.error) {
+        console.error('Unkey API key not found')
+        return notFound()
+    }
 
     const { data: customer, error: customerError } = await tryCatch(
         polar.customers.getExternal({
@@ -313,38 +331,14 @@ async function SubscriptionCard(props: { user: User }) {
                     </h3>
 
                     <div className="space-y-4">
-                        <div>
-                            <div className="mb-1 flex justify-between text-sm">
-                                <span>
-                                    Used:{' '}
-                                    {formatDuration(
-                                        { seconds: metadata.timeUsed },
-                                        {
-                                            format: ['hours', 'minutes', 'seconds'],
-                                        }
-                                    )}
-                                </span>
-                                <span>
-                                    {Math.round(
-                                        (metadata.timeUsed / metadata.timeLimit) * 100
-                                    )}
-                                    % of{' '}
-                                    {formatDuration(
-                                        { hours: metadata.timeLimit / 3600 },
-                                        { format: ['hours'] }
-                                    )}
-                                </span>
-                            </div>
-                            <div className="bg-accent h-2 w-full overflow-hidden rounded-full">
-                                <Progress
-                                    value={metadata.timeUsed / metadata.timeLimit}
-                                />
-                            </div>
-                        </div>
+                        <TimeUsageBar
+                            remaining={unkeyApiKey.result.remaining ?? 0}
+                            limit={unkeyApiKey.result.refill?.amount ?? 0}
+                        />
 
                         <div className="space-y-2">
                             <h4 className="text-sm font-medium">Recent Activity</h4>
-                            {metadata.recentFiles?.map((activity, index) => (
+                            {recents?.map((activity, index) => (
                                 <div
                                     key={index}
                                     className="border-primary/10 flex justify-between border-b pb-2 text-sm"
@@ -352,13 +346,17 @@ async function SubscriptionCard(props: { user: User }) {
                                     <div className="flex items-center">
                                         <FileAudio className="text-primary mr-2 h-3 w-3" />
                                         <span className="max-w-[150px] truncate">
-                                            {activity.filename}
+                                            {activity.file.name}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span>
                                             {formatDuration(
-                                                { seconds: activity.duration },
+                                                {
+                                                    seconds: Math.floor(
+                                                        activity.duration
+                                                    ),
+                                                },
                                                 {
                                                     format:
                                                         activity.duration < 60
@@ -374,7 +372,7 @@ async function SubscriptionCard(props: { user: User }) {
                                             )}
                                         </span>
                                         <span className="text-muted-foreground text-xs">
-                                            {formatDistanceToNow(activity.createdAt, {
+                                            {formatDistanceToNow(activity._creationTime, {
                                                 addSuffix: true,
                                             })}
                                         </span>
@@ -392,5 +390,39 @@ async function SubscriptionCard(props: { user: User }) {
                 </p>
             </CardContent>
         </Card>
+    )
+}
+
+function TimeUsageBar(props: { remaining: number; limit: number }) {
+    const current = props.limit - props.remaining
+
+    return (
+        <div>
+            <div className="mb-1 flex justify-between text-sm">
+                <span>
+                    Used:{' '}
+                    {formatDuration(
+                        {
+                            seconds: current,
+                        },
+                        {
+                            format: ['hours', 'minutes', 'seconds'],
+                        }
+                    )}
+                </span>
+                <span>
+                    {Math.round((current / props.limit) * 100)}% of{' '}
+                    {formatDuration(
+                        {
+                            hours: props.limit / 3600,
+                        },
+                        { format: ['hours'] }
+                    )}
+                </span>
+            </div>
+            <div className="bg-accent h-2 w-full overflow-hidden rounded-full">
+                <Progress value={(current / props.limit) * 100} />
+            </div>
+        </div>
     )
 }

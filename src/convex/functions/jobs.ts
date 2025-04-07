@@ -3,7 +3,7 @@
 import { v } from 'convex/values'
 import { clerkClient } from '@clerk/nextjs/server'
 
-import { internalAction } from '../_generated/server'
+import { action, internalAction } from '../_generated/server'
 import { tryCatch } from '~/lib/try-catch'
 import { client } from '~/server/deepgram'
 import { unkey } from '~/server/unkey'
@@ -36,6 +36,7 @@ export const startTranscription = internalAction({
                     language: 'en',
                     diarize: args.speakerLabels,
                     paragraphs: true,
+                    utterances: true,
                 }
             )
         )
@@ -52,5 +53,33 @@ export const startTranscription = internalAction({
         })
 
         return data.result
+    },
+})
+
+export const reduceApiUsage = action({
+    handler: async (ctx) => {
+        const identity = await ctx.auth.getUserIdentity()
+        if (!identity) {
+            throw new Error('Unauthorized')
+        }
+
+        const clerk = await clerkClient()
+        const user = await clerk.users.getUser(identity.subject)
+
+        const keyId = user.privateMetadata.keyId as string | undefined
+        if (!keyId) {
+            console.error('No Key ID')
+            throw new Error('No Key ID')
+        }
+
+        console.log(keyId)
+
+        const result = await unkey.keys.updateRemaining({
+            keyId,
+            op: 'decrement',
+            value: 10,
+        })
+
+        console.log(result)
     },
 })
