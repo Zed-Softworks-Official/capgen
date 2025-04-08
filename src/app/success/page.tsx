@@ -4,9 +4,8 @@ import { redirect } from 'next/navigation'
 import { RedirectToSignIn } from '@clerk/nextjs'
 import { currentUser } from '@clerk/nextjs/server'
 
-import { Calendar, CheckCircle, CreditCard, Upload, ArrowRight } from 'lucide-react'
+import { Calendar, CheckCircle, Upload, ArrowRight } from 'lucide-react'
 
-import { Logo } from '../_components/ui/logo'
 import { Card, CardContent } from '../_components/ui/card'
 import { Button } from '../_components/ui/button'
 import { polar } from '~/server/polar'

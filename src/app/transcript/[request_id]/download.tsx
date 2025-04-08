@@ -15,7 +15,6 @@ export function DownloadButton(props: {
 }) {
     const [pending, setPending] = useState(false)
 
-    // TODO: add the ability to have a max word count per caption
     const splitTranscript = useCallback(() => {
         if (!props.transcript) return
 
@@ -38,7 +37,7 @@ export function DownloadButton(props: {
             )
 
         return nodes
-    }, [props.transcript, props.selectedSpeakers])
+    }, [props])
 
     const handleDownload = useCallback(
         (nodes: Record<string, NodeList>) => {

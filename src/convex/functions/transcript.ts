@@ -79,7 +79,7 @@ export const transcribeAudio = action({
             audioUrl: args.audioUrl,
             speakerCount: data.metadata.channels,
             userId: identity.subject,
-            duration: data.metadata.duration,
+            duration: Math.floor(data.metadata.duration),
             speakers: speakers,
             transcript: transcript,
             requestId: data.metadata.request_id,

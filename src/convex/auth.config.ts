@@ -1,6 +1,6 @@
 import { env } from '~/env'
 
-export default {
+const config = {
     providers: [
         {
             domain: env.CLERK_DOMAIN,
@@ -8,3 +8,5 @@ export default {
         },
     ],
 }
+
+export default config

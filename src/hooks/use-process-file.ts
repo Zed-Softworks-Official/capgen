@@ -22,7 +22,7 @@ export function useProcessFile(
 
         processedRef.current = true
         void processFile(file, transcribeAudio)
-    }, [file])
+    }, [file, transcribeAudio])
 }
 
 async function processFile(file: File, transcribeAudio: TranscribeActionType) {
