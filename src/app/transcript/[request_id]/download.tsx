@@ -37,7 +37,7 @@ export function DownloadButton(props: {
             )
 
         return nodes
-    }, [props])
+    }, [props.transcript, props.selectedSpeakers])
 
     const handleDownload = useCallback(
         (nodes: Record<string, NodeList>) => {

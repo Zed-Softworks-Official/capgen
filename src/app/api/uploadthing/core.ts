@@ -23,7 +23,7 @@ export const capgenFileRouter = {
         },
     })
         .middleware(({ req }) => auth(req))
-        .onUploadComplete(async ({ metadata, file }) => {
+        .onUploadComplete(async ({ metadata }) => {
             return { uploadedBy: metadata.userId }
         }),
 } satisfies FileRouter
