@@ -1,7 +1,8 @@
 'use client'
 
+import Link from 'next/link'
 import { usePreloadedQuery, type Preloaded } from 'convex/react'
-import { Pause, Play, Users } from 'lucide-react'
+import { ArrowLeft, Pause, Play, Users } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 
 import { Button } from '~/app/_components/ui/button'
@@ -20,6 +21,7 @@ import type { CapGenTranscript, Speaker } from '~/lib/types'
 import { cn } from '~/lib/utils'
 import { DownloadButton } from './download'
 import { notFound } from 'next/navigation'
+import { workflowStore } from '~/lib/store'
 
 export function TranscriptDisplay(props: {
     preloadedQuery: Preloaded<typeof api.functions.transcript.getTranscriptByRequestId>
@@ -235,5 +237,32 @@ function SpeakerPreview(props: {
                 </TooltipContent>
             </Tooltip>
         </TooltipProvider>
+    )
+}
+
+export function BackButton() {
+    return (
+        <Button variant={'ghost'} size={'icon'} className="mr-2 cursor-pointer" asChild>
+            <Link
+                href={'/home'}
+                prefetch={true}
+                onClick={() =>
+                    workflowStore.setState(() => ({
+                        currentState: 'choose-file',
+                        file: null,
+                        options: {
+                            separateSpeakers: true,
+                        },
+                        progress: {
+                            value: 0,
+                            message: 'Extracting audio from video...',
+                        },
+                        requestId: null,
+                    }))
+                }
+            >
+                <ArrowLeft className="size-5" />
+            </Link>
+        </Button>
     )
 }

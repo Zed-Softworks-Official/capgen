@@ -22,6 +22,7 @@ import {
     CardTitle,
 } from './_components/ui/card'
 import { redirect } from 'next/navigation'
+import { SignInButton } from '@clerk/nextjs'
 
 export default async function Home() {
     const user = await currentUser()
@@ -53,16 +54,18 @@ function LandingPage() {
                             and video files in seconds.
                         </p>
                         <div className="flex flex-col gap-4 sm:flex-row">
-                            <Button
-                                size="lg"
-                                className="group relative overflow-hidden"
-                                asChild
-                            >
-                                <Link href="/">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
-                                    <span className="relative">Try for Free</span>
-                                </Link>
-                            </Button>
+                            <SignInButton>
+                                <Button
+                                    size="lg"
+                                    className="group relative overflow-hidden"
+                                    asChild
+                                >
+                                    <div>
+                                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
+                                        <span className="relative">Try for Free</span>
+                                    </div>
+                                </Button>
+                            </SignInButton>
                             <Button size="lg" variant="outline" asChild>
                                 <Link href="#pricing">View Pricing</Link>
                             </Button>

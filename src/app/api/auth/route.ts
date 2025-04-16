@@ -48,7 +48,6 @@ async function processEvent(event: WebhookEvent) {
     // Store the API Key somewhere
     const clerk = await clerkClient()
     await clerk.users.updateUserMetadata(id, {
-        publicMetadata: {},
         privateMetadata: {
             keyId: apiKey.result.keyId,
             unkeyApiKey: apiKey.result.key,

@@ -25,8 +25,8 @@ export function DownloadButton(props: {
                     acc[speaker] = lines.map((line) => ({
                         type: 'cue',
                         data: {
-                            start: line.start,
-                            end: line.end,
+                            start: line.start * 1000,
+                            end: line.end * 1000,
                             text: line.text,
                         },
                     }))
