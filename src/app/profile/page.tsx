@@ -241,15 +241,14 @@ async function SubscriptionCard(props: { user: User }) {
                     )}
 
                     <Button asChild className="group relative overflow-hidden">
-                        <Link href={'/api/portal'} target="_blank">
+                        <Link href={'/portal'} target="_blank">
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
                             <span className="relative flex items-center">
                                 <ExternalLink className="mr-2 h-4 w-4" />
-                                {subData?.status === 'active'
+                                {subData?.status === 'active' ||
+                                subData?.status === 'trialing'
                                     ? 'Manage Subscription'
-                                    : subData?.status === 'trialing'
-                                      ? 'Upgrade to Pro'
-                                      : 'Subscribe Now'}
+                                    : 'Subscribe Now'}
                             </span>
                         </Link>
                     </Button>
@@ -360,10 +359,15 @@ function TimeUsageBar(props: { remaining: number; limit: number }) {
                     Used:{' '}
                     {formatDuration(
                         {
-                            seconds: current,
+                            seconds: Math.floor(current),
                         },
                         {
-                            format: ['hours', 'minutes', 'seconds'],
+                            format:
+                                current < 60
+                                    ? ['seconds']
+                                    : current < 3600
+                                      ? ['minutes', 'seconds']
+                                      : ['hours', 'minutes', 'seconds'],
                         }
                     )}
                 </span>

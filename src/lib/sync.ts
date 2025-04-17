@@ -6,6 +6,13 @@ import { unkey } from '~/server/unkey'
 import { clerkClient } from '@clerk/nextjs/server'
 
 export async function syncStripeToRedis(customerId: string) {
+    const trialSubscrtipion = await stripe.subscriptions.list({
+        customer: customerId,
+        limit: 1,
+        status: 'trialing',
+        expand: ['data.default_payment_method'],
+    })
+
     const subscriptions = await stripe.subscriptions.list({
         customer: customerId,
         limit: 1,
@@ -13,14 +20,20 @@ export async function syncStripeToRedis(customerId: string) {
         expand: ['data.default_payment_method'],
     })
 
-    if (!subscriptions.data[0]) {
+    if (!subscriptions.data[0] && !trialSubscrtipion.data[0]) {
         const subData = { status: 'none' } as const
         await redis.set<StripeSubData>(`stripe:customer:${customerId}`, subData)
         await syncStripeToUnkey(customerId, subData)
         return subData
     }
 
-    const subscription = subscriptions.data[0]
+    const subscription = subscriptions.data[0] ?? trialSubscrtipion.data[0]
+    if (!subscription) {
+        return {
+            status: 'none',
+        }
+    }
+
     const subData = {
         subscriptionId: subscription.id,
         status: subscription.status,

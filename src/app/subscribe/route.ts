@@ -32,8 +32,8 @@ export async function GET(req: NextRequest) {
     const checkout = await stripe.checkout.sessions.create({
         customer: stripeCustomerId,
         mode: 'subscription',
-        success_url: 'https://capgen.io/success',
-        return_url: 'https://capgen.io/home',
+        ui_mode: 'hosted',
+        success_url: 'http://capgen.io/success',
         line_items: [
             {
                 price: env.STRIPE_PRICE_ID,
@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
         subscription_data: {
             trial_period_days: 7,
         },
+        payment_method_types: ['card'],
     })
 
     if (!checkout.url) return new NextResponse('Internal Error', { status: 500 })
