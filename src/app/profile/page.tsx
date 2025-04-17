@@ -25,7 +25,6 @@ import {
 } from '../_components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '../_components/ui/avatar'
 import { Badge } from '../_components/ui/badge'
-import { env } from '~/env'
 import { Progress } from '../_components/ui/progress'
 import { unkey } from '~/server/unkey'
 import { getAuthToken } from '~/lib/auth'

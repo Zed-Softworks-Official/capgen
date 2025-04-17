@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
         return_url: 'https://capgen.io/home',
         line_items: [
             {
-                price: env.STRIPE_PRODUCT_ID,
+                price: env.STRIPE_PRICE_ID,
                 quantity: 1,
             },
         ],

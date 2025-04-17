@@ -20,7 +20,7 @@ async function processEvent(event: WebhookEvent) {
     if (!allowedEvents.includes(event.type)) return
     if (event.type !== 'user.created') return
 
-    const { id, email_addresses, first_name, last_name, created_at } = event.data
+    const { id, first_name, last_name, created_at } = event.data
 
     // Create API KEY
     const apiKey = await unkey.keys.create({
@@ -29,11 +29,11 @@ async function processEvent(event: WebhookEvent) {
         name: `${first_name} ${last_name}`,
         environment: env.NODE_ENV,
         refill: {
-            amount: 1 * 3600,
+            amount: 0,
             interval: 'monthly',
             refillDay: new Date(created_at).getDay(),
         },
-        remaining: 1 * 3600,
+        remaining: 0,
     })
 
     if (apiKey.error) {

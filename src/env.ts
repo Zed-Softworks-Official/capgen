@@ -19,7 +19,7 @@ export const env = createEnv({
         UPLOADTHING_TOKEN: z.string(),
 
         STRIPE_SECRET_KEY: z.string(),
-        STRIPE_PRODUCT_ID: z.string(),
+        STRIPE_PRICE_ID: z.string(),
         STRIPE_WEBHOOK_SECRET: z.string(),
 
         UPSTASH_REDIS_REST_URL: z.string(),
@@ -58,7 +58,7 @@ export const env = createEnv({
         UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
 
         STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
-        STRIPE_PRODUCT_ID: process.env.STRIPE_PRODUCT_ID,
+        STRIPE_PRICE_ID: process.env.STRIPE_PRICE_ID,
         STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
 
         UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
