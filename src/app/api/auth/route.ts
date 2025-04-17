@@ -12,10 +12,7 @@ import { waitUntil } from '@vercel/functions'
 
 import { env } from '~/env'
 import { tryCatch } from '~/lib/try-catch'
-import { polar } from '~/server/polar'
 import { unkey } from '~/server/unkey'
-import { redis } from '~/server/redis'
-import type { TrialData } from '~/lib/types'
 
 const allowedEvents = ['user.created'] as WebhookEventType[]
 
@@ -52,20 +49,6 @@ async function processEvent(event: WebhookEvent) {
             keyId: apiKey.result.keyId,
             unkeyApiKey: apiKey.result.key,
         },
-    })
-
-    // Create a customer in Polar
-    await polar.customers.create({
-        name: `${first_name} ${last_name}`,
-        email: email_addresses[0]?.email_address ?? '',
-        externalId: id,
-    })
-
-    // Create a trial in Redis
-    await redis.set<TrialData>(`subscription:${id}`, {
-        currentlyInTrial: true,
-        trialEndsAt: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
-        trialStartedAt: Math.floor(Date.now() / 1000),
     })
 }
 

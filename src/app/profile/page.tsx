@@ -1,5 +1,6 @@
 import { RedirectToSignIn } from '@clerk/nextjs'
 import { currentUser, type User } from '@clerk/nextjs/server'
+import { fetchQuery } from 'convex/nextjs'
 import Link from 'next/link'
 import {
     ArrowLeft,
@@ -13,8 +14,6 @@ import {
 import { notFound } from 'next/navigation'
 import { formatDistanceToNow, formatDuration } from 'date-fns'
 
-import { polar } from '~/server/polar'
-
 import { Button } from '~/app/_components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/app/_components/ui/tabs'
 import {
@@ -27,12 +26,12 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '../_components/ui/avatar'
 import { Badge } from '../_components/ui/badge'
 import { env } from '~/env'
-import { tryCatch } from '~/lib/try-catch'
 import { Progress } from '../_components/ui/progress'
 import { unkey } from '~/server/unkey'
 import { getAuthToken } from '~/lib/auth'
-import { fetchQuery } from 'convex/nextjs'
 import { api } from '~/convex/_generated/api'
+import { redis } from '~/server/redis'
+import type { StripeSubData } from '~/lib/types'
 
 export default async function ProfilePage() {
     const user = await currentUser()
@@ -178,47 +177,11 @@ async function SubscriptionCard(props: { user: User }) {
         return notFound()
     }
 
-    const { data: customer, error: customerError } = await tryCatch(
-        polar.customers.getExternal({
-            externalId: props.user.id,
-        })
-    )
-
-    if (customerError || !customer) {
-        console.error(customerError)
-        return notFound()
-    }
-
-    const { data: subscriptions, error: subscriptionsError } = await tryCatch(
-        polar.subscriptions.list({
-            customerId: customer.id,
-            limit: 1,
-            productId: env.POLAR_PRODUCT_ID,
-        })
-    )
-
-    if (subscriptionsError || !subscriptions) {
-        console.error(subscriptionsError)
-        return notFound()
-    }
-
-    const subscription = subscriptions.result.items[0]
+    const customerId = await redis.get<string>(`stripe:user:${props.user.id}`)
+    const subData = await redis.get<StripeSubData>(`stripe:customer:${customerId}`)
 
     const formatTrialRemaining = (endDate: number) => {
         return formatDistanceToNow(new Date(endDate * 1000), { addSuffix: false })
-    }
-
-    const customerPortalUrl = async () => {
-        if (subscription?.status === 'active') {
-            return '/api/portal'
-        }
-
-        const urlParams = new URLSearchParams({
-            productId: env.POLAR_PRODUCT_ID,
-            customerExternalId: props.user.id,
-        })
-
-        return `/api/subscribe?${urlParams.toString()}`
     }
 
     return (
@@ -234,7 +197,7 @@ async function SubscriptionCard(props: { user: User }) {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="bg-accent/30 border-primary/20 rounded-lg border p-6">
-                    {subscription?.status === 'active' ? (
+                    {subData?.status === 'active' ? (
                         <>
                             <div className="mb-4 flex items-center justify-between">
                                 <h3 className="text-xl font-medium">Pro Plan</h3>
@@ -246,24 +209,19 @@ async function SubscriptionCard(props: { user: User }) {
                                 You have full access to all CapGen features.
                             </p>
                         </>
-                    ) : customer.metadata.currentlyInTrial ? (
+                    ) : subData?.status === 'trialing' ? (
                         <>
                             <div className="mb-4 flex items-center justify-between">
                                 <h3 className="text-xl font-medium">Free Trial</h3>
                                 <Badge className="border-blue-500/20 bg-blue-500/20 text-blue-500">
-                                    {formatTrialRemaining(
-                                        customer.metadata.trialEndsAt as number
-                                    )}{' '}
+                                    {formatTrialRemaining(subData.currentPeriodEnd ?? 0)}{' '}
                                     remaining
                                 </Badge>
                             </div>
                             <p className="text-muted-foreground mb-6">
                                 You&apos;re currently on a free trial with access to all
                                 CapGen features. Your trial will end in{' '}
-                                {formatTrialRemaining(
-                                    customer.metadata.trialEndsAt as number
-                                )}
-                                .
+                                {formatTrialRemaining(subData.currentPeriodEnd ?? 0)}.
                             </p>
                         </>
                     ) : (
@@ -284,13 +242,13 @@ async function SubscriptionCard(props: { user: User }) {
                     )}
 
                     <Button asChild className="group relative overflow-hidden">
-                        <Link href={await customerPortalUrl()} target="_blank">
+                        <Link href={'/api/portal'} target="_blank">
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
                             <span className="relative flex items-center">
                                 <ExternalLink className="mr-2 h-4 w-4" />
-                                {subscription?.status === 'active'
+                                {subData?.status === 'active'
                                     ? 'Manage Subscription'
-                                    : customer.metadata.currentlyInTrial
+                                    : subData?.status === 'trialing'
                                       ? 'Upgrade to Pro'
                                       : 'Subscribe Now'}
                             </span>

@@ -1,9 +1,7 @@
 import { action } from '~/convex/_generated/server'
 
-import type { TrialData } from '~/lib/types'
-
-import { env } from '~/env'
-import { polar } from '~/server/polar'
+import type { StripeSubData } from '~/lib/types'
+import { redis } from '~/server/redis'
 
 export const checkUserSubscription = action({
     handler: async (ctx) => {
@@ -13,46 +11,19 @@ export const checkUserSubscription = action({
         }
 
         const userId = identity.subject
+        const customerId = await redis.get<string>(`stripe:user:${userId}`)
+        const subData = await redis.get<StripeSubData>(`stripe:customer:${customerId}`)
 
-        const customer = await polar.customers.getExternal({
-            externalId: userId,
-        })
-
-        const metadata = customer.metadata as TrialData
-        if (
-            metadata.currentlyInTrial &&
-            metadata.trialEndsAt > Math.floor(Date.now() / 1000)
-        ) {
-            return {
-                value: true,
-                message: null,
-            }
-        } else if (
-            metadata.currentlyInTrial &&
-            metadata.trialEndsAt < Math.floor(Date.now() / 1000)
-        ) {
+        if (subData?.status === 'none') {
             return {
                 value: false,
-                message: 'Your trial has expired',
-            }
-        }
-
-        const subscription = await polar.subscriptions.list({
-            customerId: customer.id,
-            active: true,
-            productId: env.POLAR_PRODUCT_ID,
-        })
-
-        if (subscription.result.items.length > 0) {
-            return {
-                value: true,
-                message: null,
+                message: 'You are not subscribed to the service',
             }
         }
 
         return {
-            value: false,
-            message: 'You are not subscribed to the service',
+            value: true,
+            message: null,
         }
     },
 })

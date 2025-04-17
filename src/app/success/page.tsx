@@ -1,39 +1,26 @@
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 
 import { RedirectToSignIn } from '@clerk/nextjs'
 import { currentUser } from '@clerk/nextjs/server'
+import { redirect } from 'next/navigation'
 
 import { Calendar, CheckCircle, Upload, ArrowRight } from 'lucide-react'
 
 import { Card, CardContent } from '../_components/ui/card'
 import { Button } from '../_components/ui/button'
-import { polar } from '~/server/polar'
-import { env } from '~/env'
 import { Confetti } from './confetti'
+import { redis } from '~/server/redis'
+import { syncStripeToRedis } from '~/lib/sync'
 
 export default async function SuccessPage() {
     const user = await currentUser()
+    if (!user) return <RedirectToSignIn />
 
-    if (!user) {
-        return <RedirectToSignIn />
-    }
+    const stripeCustomerId = await redis.get<string>(`stripe:user:${user.id}`)
+    if (!stripeCustomerId) return redirect('/home')
 
-    const customer = await polar.customers.getExternal({
-        externalId: user.id,
-    })
-
-    const subscriptions = await polar.subscriptions.list({
-        customerId: customer.id,
-        active: true,
-        limit: 1,
-        productId: env.POLAR_PRODUCT_ID,
-    })
-
-    const subscriptionData = subscriptions.result.items[0]
-    if (!subscriptionData) {
-        return redirect('/')
-    }
+    const subData = await syncStripeToRedis(stripeCustomerId)
+    if (subData.status === 'none') return redirect('/home')
 
     return (
         <main className="flex flex-1 flex-col">
@@ -60,14 +47,12 @@ export default async function SuccessPage() {
                             <div className="space-y-4">
                                 <div className="border-primary/10 flex items-center justify-between border-b pb-2">
                                     <span className="font-medium">Plan</span>
-                                    <span className="font-bold">
-                                        {subscriptionData.product.name}
-                                    </span>
+                                    <span className="font-bold">CapGen Pro</span>
                                 </div>
 
                                 <div className="border-primary/10 flex items-center justify-between border-b pb-2">
                                     <span className="font-medium">Price</span>
-                                    <span>${subscriptionData.amount / 100} / month</span>
+                                    <span>$15 / month</span>
                                 </div>
 
                                 <div className="border-primary/10 flex items-center justify-between border-b pb-2">
@@ -76,7 +61,9 @@ export default async function SuccessPage() {
                                         Next billing date
                                     </span>
                                     <span>
-                                        {subscriptionData.currentPeriodEnd?.toLocaleDateString()}
+                                        {new Date(
+                                            subData.currentPeriodEnd ?? 0
+                                        ).toLocaleDateString()}
                                     </span>
                                 </div>
                             </div>

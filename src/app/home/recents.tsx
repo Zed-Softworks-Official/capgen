@@ -76,14 +76,23 @@ export function Recents() {
                                         </span>
                                         <span>•</span>
                                         <span>
-                                            {formatDuration(
-                                                {
-                                                    seconds: Math.floor(
-                                                        transcription.duration
-                                                    ),
-                                                },
-                                                { format: ['minutes', 'seconds'] }
-                                            )}
+                                            {(() => {
+                                                const seconds = Math.floor(
+                                                    transcription.duration
+                                                )
+                                                return formatDuration(
+                                                    {
+                                                        minutes: Math.floor(seconds / 60),
+                                                        seconds: seconds % 60,
+                                                    },
+                                                    {
+                                                        format:
+                                                            seconds >= 60
+                                                                ? ['minutes', 'seconds']
+                                                                : ['seconds'],
+                                                    }
+                                                )
+                                            })()}
                                         </span>
                                         <span>•</span>
                                         <span>

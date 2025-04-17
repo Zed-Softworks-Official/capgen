@@ -18,9 +18,9 @@ export const env = createEnv({
 
         UPLOADTHING_TOKEN: z.string(),
 
-        POLAR_ACESS_TOKEN: z.string(),
-        POLAR_PRODUCT_ID: z.string(),
-        POLAR_WEBHOOK_SECRET: z.string(),
+        STRIPE_SECRET_KEY: z.string(),
+        STRIPE_PRODUCT_ID: z.string(),
+        STRIPE_WEBHOOK_SECRET: z.string(),
 
         UPSTASH_REDIS_REST_URL: z.string(),
         UPSTASH_REDIS_REST_TOKEN: z.string(),
@@ -57,9 +57,9 @@ export const env = createEnv({
 
         UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
 
-        POLAR_ACESS_TOKEN: process.env.POLAR_ACCESS_TOKEN,
-        POLAR_PRODUCT_ID: process.env.POLAR_PRODUCT_ID,
-        POLAR_WEBHOOK_SECRET: process.env.POLAR_WEBHOOK_SECRET,
+        STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+        STRIPE_PRODUCT_ID: process.env.STRIPE_PRODUCT_ID,
+        STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
 
         UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
         UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,

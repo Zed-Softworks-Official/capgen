@@ -1,3 +1,5 @@
+import Stripe from 'stripe'
+
 export type CapGenTranscript = Record<string, Line[]>
 
 export type Captions = {
@@ -18,10 +20,21 @@ export type Speaker = {
     color: string
 }
 
-export type RedisBaseKey = 'user' | 'customer'
+export type RedisBaseKey = 'stripe:user' | 'stripe:customer'
 
-export type TrialData = {
-    currentlyInTrial: boolean
-    trialEndsAt: number
-    trialStartedAt: number
-}
+export type StripeSubData =
+    | {
+          subscriptionId: string
+          status: Stripe.Subscription.Status
+          priceId: string | undefined
+          currentPeriodStart: number | undefined
+          currentPeriodEnd: number | undefined
+          cancelAtPeriodEnd: boolean
+          paymentMethod: {
+              brand: string | null
+              last4: string | null
+          } | null
+      }
+    | {
+          status: 'none'
+      }
