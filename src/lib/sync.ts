@@ -31,7 +31,7 @@ export async function syncStripeToRedis(customerId: string) {
     if (!subscription) {
         return {
             status: 'none',
-        }
+        } as const
     }
 
     const subData = {
