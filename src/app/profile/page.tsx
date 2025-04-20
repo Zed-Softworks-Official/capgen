@@ -242,7 +242,11 @@ async function SubscriptionCard(props: { user: User }) {
 
                     <Button asChild className="group relative overflow-hidden">
                         <Link
-                            href={subData?.status === 'none' ? '/subscribe' : '/portal'}
+                            href={
+                                subData?.status === 'none' || !subData
+                                    ? '/subscribe'
+                                    : '/portal'
+                            }
                             target="_blank"
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
@@ -343,7 +347,7 @@ async function SubscriptionCard(props: { user: User }) {
                 </div>
 
                 <p className="text-muted-foreground text-sm">
-                    Subscription management is handled through Polar. Click the button
+                    Subscription management is handled through Stripe. Click the button
                     above to manage your subscription, update payment methods, or view
                     billing history.
                 </p>
