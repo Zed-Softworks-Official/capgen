@@ -2,12 +2,14 @@
 
 import { v } from 'convex/values'
 import { clerkClient } from '@clerk/nextjs/server'
+import { verifyKey } from '@unkey/api'
 
 import { internalAction } from '../_generated/server'
 import { tryCatch } from '~/lib/try-catch'
 import { client } from '~/server/deepgram'
 
-import { verifyKey } from '@unkey/api'
+import { unkey } from '~/server/unkey'
+
 import { env } from '~/env'
 
 export const startTranscription = internalAction({
@@ -29,13 +31,18 @@ export const startTranscription = internalAction({
         const { result, error: verifyError } = await verifyKey({
             apiId: env.UNKEY_API_ID,
             key: apiKey,
+            remaining: {
+                cost: 0,
+            },
         })
 
         if (verifyError) {
+            console.error(verifyError)
             throw new Error('Invalid API Key')
         }
 
         if (!result.valid) {
+            console.error(result)
             throw new Error('Unauthorized request')
         }
 
@@ -59,6 +66,12 @@ export const startTranscription = internalAction({
             console.error(data)
             throw new Error('Failed start transcription job')
         }
+
+        await unkey.keys.updateRemaining({
+            keyId: user.privateMetadata.keyId as string,
+            op: 'decrement',
+            value: Math.floor(data.result.metadata.duration),
+        })
 
         return data.result
     },
