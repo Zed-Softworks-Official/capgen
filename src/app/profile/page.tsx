@@ -357,7 +357,7 @@ async function SubscriptionCard(props: { user: User }) {
 }
 
 function TimeUsageBar(props: { remaining: number; limit: number }) {
-    const current = props.remaining - props.limit
+    const current = props.limit - props.remaining
 
     return (
         <div>
