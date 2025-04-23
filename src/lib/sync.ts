@@ -69,8 +69,8 @@ async function syncStripeToUnkey(customerId: string, subData: StripeSubData) {
     })
     if (currentKeyStatus.error) return
 
-    let amount = subData.status === 'trialing' ? 3600 : 3600 * 10
-    let remaining = currentKeyStatus.result.remaining
+    let amount = 3600 * 10
+    let remaining = currentKeyStatus.result.remaining ?? 3600 * 10
     if (subData.status === 'none') {
         amount = 0
         remaining = 0
