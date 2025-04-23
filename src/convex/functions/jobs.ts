@@ -6,7 +6,9 @@ import { clerkClient } from '@clerk/nextjs/server'
 import { internalAction } from '../_generated/server'
 import { tryCatch } from '~/lib/try-catch'
 import { client } from '~/server/deepgram'
-import { unkey } from '~/server/unkey'
+
+import { verifyKey } from '@unkey/api'
+import { env } from '~/env'
 
 export const startTranscription = internalAction({
     args: {
@@ -18,11 +20,23 @@ export const startTranscription = internalAction({
     handler: async (_, args) => {
         const clerk = await clerkClient()
         const user = await clerk.users.getUser(args.userId)
+        const apiKey = user.privateMetadata.unkeyApiKey as string | undefined
 
-        const keyId = user.privateMetadata.keyId as string | undefined
+        if (!apiKey) {
+            throw new Error('No API Key has been set!')
+        }
 
-        if (!keyId) {
-            throw new Error('Unauthorized')
+        const { result, error: verifyError } = await verifyKey({
+            apiId: env.UNKEY_API_ID,
+            key: apiKey,
+        })
+
+        if (verifyError) {
+            throw new Error('Invalid API Key')
+        }
+
+        if (!result.valid) {
+            throw new Error('Unauthorized request')
         }
 
         const { data, error } = await tryCatch(
@@ -45,12 +59,6 @@ export const startTranscription = internalAction({
             console.error(data)
             throw new Error('Failed start transcription job')
         }
-
-        await unkey.keys.updateRemaining({
-            keyId,
-            op: 'decrement',
-            value: Math.floor(data.result.metadata.duration),
-        })
 
         return data.result
     },
