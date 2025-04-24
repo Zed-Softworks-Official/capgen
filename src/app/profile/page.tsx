@@ -278,10 +278,6 @@ async function SubscriptionCard(props: { user: User }) {
                         </li>
                         <li className="flex items-start">
                             <div className="text-primary mt-0.5 mr-2">•</div>
-                            <span>Multiple export formats (SRT, VTT, TXT)</span>
-                        </li>
-                        <li className="flex items-start">
-                            <div className="text-primary mt-0.5 mr-2">•</div>
                             <span>Priority processing</span>
                         </li>
                     </ul>

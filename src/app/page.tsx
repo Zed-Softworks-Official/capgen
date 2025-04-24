@@ -57,7 +57,7 @@ function LandingPage() {
                             <SignInButton>
                                 <Button
                                     size="lg"
-                                    className="group relative overflow-hidden"
+                                    className="group relative cursor-pointer overflow-hidden"
                                     asChild
                                 >
                                     <div>
@@ -158,9 +158,6 @@ function LandingPage() {
                                     <PricingFeature>Unlimited audio files</PricingFeature>
                                     <PricingFeature>Speaker separation</PricingFeature>
                                     <PricingFeature>
-                                        Multiple export formats (SRT, VTT, TXT)
-                                    </PricingFeature>
-                                    <PricingFeature>
                                         Audio preview for verification
                                     </PricingFeature>
                                 </ul>
@@ -177,13 +174,6 @@ function LandingPage() {
                                 </Button>
                             </CardFooter>
                         </Card>
-                        <p className="text-muted-foreground mt-4 text-center text-sm">
-                            Need more?{' '}
-                            <Link href="#" className="text-primary hover:underline">
-                                Contact us
-                            </Link>{' '}
-                            for custom enterprise plans.
-                        </p>
                     </div>
                 </div>
             </section>
@@ -204,10 +194,14 @@ function LandingPage() {
                             className="group relative overflow-hidden"
                             asChild
                         >
-                            <Link href="/upload">
-                                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
-                                <span className="relative">Start Your Free Trial</span>
-                            </Link>
+                            <SignInButton>
+                                <Button className="cursor-pointer">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-600 opacity-100 transition-opacity group-hover:opacity-90"></div>
+                                    <span className="relative">
+                                        Start Your Free Trial
+                                    </span>
+                                </Button>
+                            </SignInButton>
                         </Button>
                     </div>
                 </div>
