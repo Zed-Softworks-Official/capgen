@@ -58,6 +58,7 @@ export const startTranscription = internalAction({
                     diarize: args.speakerLabels,
                     paragraphs: true,
                     utterances: true,
+                    punctuate: false,
                 }
             )
         )
