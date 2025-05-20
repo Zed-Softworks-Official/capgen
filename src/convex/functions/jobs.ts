@@ -15,7 +15,10 @@ import { env } from '~/env'
 export const startTranscription = internalAction({
     args: {
         audioUrl: v.string(),
-        speakerLabels: v.boolean(),
+        opts: v.object({
+            separateSpeakers: v.boolean(),
+            punctuate: v.boolean(),
+        }),
         speakerCount: v.number(),
         userId: v.string(),
     },
@@ -55,10 +58,10 @@ export const startTranscription = internalAction({
                     model: 'nova-3',
                     smart_format: true,
                     language: 'en',
-                    diarize: args.speakerLabels,
+                    diarize: args.opts.separateSpeakers,
                     paragraphs: true,
                     utterances: true,
-                    punctuate: false,
+                    punctuate: args.opts.punctuate,
                 }
             )
         )

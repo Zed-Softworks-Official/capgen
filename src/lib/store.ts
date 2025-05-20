@@ -13,6 +13,7 @@ type WorkflowStoreType = {
     } | null
     options: {
         separateSpeakers: boolean
+        punctuate: boolean
     } | null
     requestId: string | null
 }

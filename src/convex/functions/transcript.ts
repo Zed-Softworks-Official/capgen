@@ -12,6 +12,7 @@ export const transcribeAudio = action({
         audioUrl: v.string(),
         speakerLabels: v.boolean(),
         speakerCount: v.optional(v.number()),
+        punctuate: v.boolean(),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity()
@@ -22,7 +23,10 @@ export const transcribeAudio = action({
         const data = await ctx.runAction(internal.functions.jobs.startTranscription, {
             audioUrl: args.audioUrl,
             speakerCount: args.speakerCount ?? 0,
-            speakerLabels: args.speakerLabels,
+            opts: {
+                separateSpeakers: args.speakerLabels,
+                punctuate: args.punctuate,
+            },
             userId: identity.subject,
         })
 

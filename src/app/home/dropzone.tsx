@@ -70,6 +70,7 @@ function DropForm() {
     const form = useForm({
         defaultValues: {
             separateSpeakers: true,
+            punctuate: true,
         },
         onSubmit: (data) => {
             workflowStore.setState((state) => ({
@@ -77,6 +78,7 @@ function DropForm() {
                 currentState: 'processing',
                 options: {
                     separateSpeakers: data.value.separateSpeakers,
+                    punctuate: data.value.punctuate,
                 },
             }))
         },
@@ -129,6 +131,30 @@ function DropForm() {
                                         className="text-sm font-medium"
                                     >
                                         Separate speakers
+                                    </Label>
+                                </div>
+                                <Switch
+                                    id={field.name}
+                                    checked={field.state.value}
+                                    onCheckedChange={field.handleChange}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </form.Field>
+
+                    <form.Field name="punctuate">
+                        {(field) => (
+                            <div className="bg-accent/40 flex items-center justify-between rounded-lg p-4">
+                                <div className="flex items-center gap-3">
+                                    <Settings className="text-primary size-5" />
+                                    <Label
+                                        htmlFor={field.name}
+                                        className="text-sm font-medium"
+                                    >
+                                        Punctuate
                                     </Label>
                                 </div>
                                 <Switch

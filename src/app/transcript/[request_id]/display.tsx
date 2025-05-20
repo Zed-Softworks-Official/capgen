@@ -252,6 +252,7 @@ export function BackButton() {
                         file: null,
                         options: {
                             separateSpeakers: true,
+                            punctuate: true,
                         },
                         progress: {
                             value: 0,

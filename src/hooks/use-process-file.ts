@@ -83,6 +83,7 @@ async function processFile(file: File, transcribeAudio: TranscribeActionType) {
         filename: file.name,
         filetype: file.type.includes('video') ? 'video' : 'audio',
         speakerLabels: workflowStore.state.options?.separateSpeakers ?? true,
+        punctuate: workflowStore.state.options?.punctuate ?? true,
     })
 
     workflowStore.setState((state) => ({
